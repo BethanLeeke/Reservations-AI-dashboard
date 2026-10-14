@@ -8,7 +8,7 @@ A browser-based dashboard for the Vale Resort and Hensol Castle reservations tea
 
 | Tab | What it does |
 | --- | --- |
-| **Golf quoting tool** | Golf day and golf break quotations — customer details, green fees, buggies, catering, accommodation and discounts, producing a printable PDF quote. |
+| **Golf quoting tool** | Golf break quotations — customer details, green fees, buggies, catering, accommodation and discounts, producing a printable PDF quote. |
 | **Forecast** | Drop in the week's reports (Ten Day On Books for both sites, group bookings, activity and event schedules, res diary) to build a rooms, sleepers, group and diner forecast. |
 | **Morning Brief** | The same reports plus the inventory pickup, turned into the daily brief: rooms, sleepers, groups, diners and VIPs. |
 | **Golf Matrix pricing** | Guest-facing and reservations-facing breakdowns of a golf booking, priced from the golf matrix workbook. |
@@ -62,7 +62,9 @@ Keep it that way: do not commit a filled-in arrivals export, a golf matrix, or a
 ## Related
 
 The sales team's quoting tools live separately at
-<https://bethanleeke.github.io/wedding-quote-tool/>. The golf quoting tool here is the same tool as the one on that site.
+<https://bethanleeke.github.io/wedding-quote-tool/>. The golf quoting tool here began as the one on that site and differs in two ways: golf breaks only, with the golf day side removed, and the reservations team on the Prepared By list behind the shared `reservations@valeresort.com` inbox rather than individual addresses.
+
+Both sites are served from `bethanleeke.github.io`, so they share the browser's local storage. The two golf tools therefore keep their Prepared By lists under different keys and will not overwrite each other.
 
 ## Important note
 
