@@ -1,0 +1,4 @@
+# Never commit reports or rate files - they carry guest and commercial data.
+*.xlsx
+*.xls
+*.csv
