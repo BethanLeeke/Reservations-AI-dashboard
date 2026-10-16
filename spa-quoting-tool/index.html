@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vale Resort Spa Break Quoting Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary-dark: #2a2e3a;
+            --primary-burgundy: #8b3a4a;
+            --primary-green: #8fa17e;
+            --primary-green-dark: #6d8062;
+            --primary-cream: #f5f1e8;
+            --accent-light: #e8e4d8;
+            --text-dark: #2a2e3a;
+            --text-light: #6b6b6b;
+            --bg-light: #faf8f3;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0; }
+
+        .header {
+            background: linear-gradient(rgba(42, 46, 58, 0.55), rgba(143, 161, 126, 0.35));
+            padding: 80px 40px;
+            text-align: center;
+            color: white;
+            border-bottom: 3px solid var(--primary-green);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            background: rgba(42, 46, 58, 0.65);
+            padding: 40px 50px;
+            border-radius: 8px;
+            backdrop-filter: blur(2px);
+            display: inline-block;
+        }
+
+        .header-logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 20px;
+            background: white;
+            padding: 14px 22px;
+            border-radius: 6px;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+        }
+
+        .header p {
+            font-size: 1.15em;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+        }
+
+        .header-tagline {
+            font-size: 0.95em;
+            color: #f5f5f5;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 40px;
+        }
+
+        .form-section, .quote-section {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(42, 46, 58, 0.08);
+            border: 1px solid var(--accent-light);
+        }
+
+        .form-section { border-top: 4px solid var(--primary-green); }
+        .quote-section { border-top: 4px solid var(--primary-burgundy); }
+
+        .form-section h2, .quote-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            color: var(--primary-dark);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-green);
+        }
+
+        .form-group { margin-bottom: 25px; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group select,
+        .form-group input[type="number"],
+        .form-group input[type="text"],
+        .form-group input[type="tel"],
+        .form-group input[type="email"],
+        .form-group input[type="date"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--accent-light);
+            border-radius: 4px;
+            font-size: 1em;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(143, 161, 126, 0.2);
+            background: #fffbf7;
+        }
+
+        .form-group input[readonly] {
+            background: var(--accent-light);
+            color: var(--text-light);
+            cursor: default;
+        }
+
+        .date-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .date-grid .form-group { margin-bottom: 0; }
+
+        .helper-text {
+            font-size: 0.82em;
+            color: var(--text-light);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .section-subtitle {
+            color: var(--primary-burgundy);
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Mode tabs */
+        /* Checkbox toggle */
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--primary-cream);
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid var(--accent-light);
+            transition: all 0.3s ease;
+        }
+
+        .toggle-wrap:hover { border-color: var(--primary-green); }
+
+        .toggle-wrap input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 14px;
+            accent-color: var(--primary-burgundy);
+            cursor: pointer;
+        }
+
+        .toggle-wrap label {
+            margin: 0 !important;
+            cursor: pointer;
+            font-weight: 600 !important;
+            color: var(--text-dark);
+            letter-spacing: 0.3px;
+        }
+
+        /* Quote summary */
+        .quote-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--accent-light);
+            color: var(--text-dark);
+            font-size: 0.95em;
+        }
+
+        .quote-item.package-include {
+            color: var(--primary-green-dark);
+            font-style: italic;
+            font-size: 0.88em;
+        }
+
+        .quote-item.total {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--primary-burgundy);
+            padding-top: 20px;
+            padding-bottom: 10px;
+            border-top: 2px solid var(--primary-green);
+            border-bottom: none;
+            margin-top: 15px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .quote-item.deposit-line {
+            font-size: 0.88em;
+            color: var(--primary-green-dark);
+            font-weight: 600;
+            border-bottom: none;
+            padding: 6px 0;
+        }
+
+        .quote-item.info-line {
+            font-size: 0.85em;
+            color: var(--text-light);
+            font-style: italic;
+            border-bottom: none;
+            padding: 4px 0;
+        }
+
+        .quote-item.discount {
+            color: var(--primary-green-dark);
+            font-weight: 600;
+        }
+
+        .quote-section {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .quote-section::-webkit-scrollbar { width: 6px; }
+        .quote-section::-webkit-scrollbar-track { background: var(--primary-cream); }
+        .quote-section::-webkit-scrollbar-thumb { background: var(--primary-green); border-radius: 3px; }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 12px; margin-top: 30px; }
+
+        button.btn {
+            flex: 1;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-burgundy) 0%, #a65060 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 58, 74, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-green-dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover { background: var(--primary-cream); border-color: #ccc; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(42, 46, 58, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 50px;
+            border-radius: 8px;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            border-top: 4px solid var(--primary-green);
+        }
+
+        .modal-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            color: var(--primary-dark);
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--primary-green);
+            padding-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .modal-item {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--primary-cream);
+            border-radius: 4px;
+            border-left: 4px solid var(--primary-green);
+        }
+
+        .modal-item-label {
+            font-weight: 700;
+            color: var(--primary-burgundy);
+            margin-bottom: 6px;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-item-value { color: var(--text-dark); font-size: 1em; line-height: 1.6; }
+
+        .modal-total {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-burgundy);
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px solid var(--primary-green);
+            text-align: right;
+        }
+
+        .modal-actions { display: flex; gap: 12px; margin-top: 30px; }
+        .modal-actions button { flex: 1; }
+
+        .quote-status {
+            display: none;
+            background: var(--primary-cream);
+            color: var(--primary-green-dark);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        @media (max-width: 1024px) {
+            .content { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2.2em; }
+        }
+        /* ===================== QUOTE LINE REORDERING ===================== */
+        /* Every row reserves the same gutter for the controls, so the price
+           column stays aligned with the rows that have none - and the dividers
+           still run the full width of the panel. */
+        #quoteSummary .quote-item,
+        #quoteSummary .line-order-bar { padding-right: 68px; }
+
+        .quote-item[data-line-index] { position: relative; }
+        .quote-item[data-line-index] > span:first-child { flex: 1 1 auto; }
+        .quote-item[data-line-index] > span:nth-child(2) { flex: 0 0 auto; text-align: right; }
+
+        .line-order-controls {
+            position: absolute;
+            right: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            opacity: 0.4;
+            transition: opacity 0.15s ease;
+        }
+
+        .quote-item[data-line-index]:hover .line-order-controls,
+        .line-order-controls:focus-within { opacity: 1; }
+
+        .line-order-grip {
+            cursor: grab;
+            color: var(--text-light);
+            font-size: 0.9em;
+            line-height: 1;
+            padding: 0 1px;
+            user-select: none;
+        }
+
+        .line-order-btn {
+            width: 20px;
+            height: 18px;
+            padding: 0;
+            border: 1px solid var(--accent-light);
+            border-radius: 3px;
+            background: #ffffff;
+            color: var(--text-light);
+            font-size: 0.62em;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .line-order-btn:hover:not(:disabled) {
+            background: var(--primary-green, var(--primary-gold, #8fa17e));
+            border-color: var(--primary-green, var(--primary-gold, #8fa17e));
+            color: #ffffff;
+        }
+
+        .line-order-btn:disabled { opacity: 0.25; cursor: default; }
+
+        .quote-item.line-drag-source { opacity: 0.4; }
+        .quote-item.line-drop-before { box-shadow: inset 0 2px 0 var(--primary-green, var(--primary-gold, #8fa17e)); }
+        .quote-item.line-drop-after { box-shadow: inset 0 -2px 0 var(--primary-green, var(--primary-gold, #8fa17e)); }
+
+        .line-order-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 6px 0 8px;
+            font-size: 0.75em;
+            color: var(--text-light);
+            letter-spacing: 0.3px;
+        }
+
+        .line-order-reset {
+            border: 1px solid var(--accent-light);
+            background: #ffffff;
+            color: var(--text-light);
+            border-radius: 3px;
+            padding: 4px 9px;
+            font-family: inherit;
+            font-size: 0.95em;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .line-order-reset:hover {
+            background: var(--primary-green, var(--primary-gold, #8fa17e));
+            border-color: var(--primary-green, var(--primary-gold, #8fa17e));
+            color: #ffffff;
+        }
+
+        @media print {
+            .line-order-controls, .line-order-bar { display: none !important; }
+        }
+        /* ===================== PREPARED BY TEAM LIST ===================== */
+        .prepared-by-manage { margin: -12px 0 22px; }
+
+        .pb-toggle {
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 0.78em;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: var(--primary-green-dark, var(--primary-gold, #6d8062));
+            cursor: pointer;
+        }
+
+        .pb-toggle:hover { text-decoration: underline; }
+
+        .pb-panel {
+            margin-top: 10px;
+            padding: 14px 16px;
+            background: var(--primary-cream, #f5f1e8);
+            border: 1px solid var(--accent-light, #e8e4d8);
+            border-radius: 4px;
+        }
+
+        .pb-list {
+            list-style: none;
+            margin: 0 0 12px;
+            padding: 0;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .pb-person {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--accent-light, #e8e4d8);
+            font-size: 0.85em;
+        }
+
+        .pb-person:last-child { border-bottom: none; }
+
+        .pb-name { flex: 0 0 auto; font-weight: 600; color: var(--text-dark, #2a2e3a); }
+
+        .pb-email {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: right;
+            font-size: 0.92em;
+            color: var(--text-light, #6b6b6b);
+        }
+
+        .pb-empty {
+            padding: 6px 0;
+            font-size: 0.85em;
+            font-style: italic;
+            color: var(--text-light, #6b6b6b);
+        }
+
+        .pb-remove {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: 1px solid var(--accent-light, #e8e4d8);
+            border-radius: 3px;
+            background: #ffffff;
+            color: var(--text-light, #6b6b6b);
+            font-size: 1.05em;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .pb-remove:hover { background: #c75366; border-color: #c75366; color: #ffffff; }
+
+        .pb-add { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
+
+        .pb-add input {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid var(--accent-light, #e8e4d8);
+            border-radius: 4px;
+            background: #ffffff;
+            font-family: inherit;
+            font-size: 0.85em;
+            color: var(--text-dark, #2a2e3a);
+        }
+
+        .pb-add-btn {
+            padding: 9px 16px;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary-green, var(--primary-gold, #8fa17e));
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .pb-add-btn:hover { background: var(--primary-green-dark, var(--primary-burgundy, #6d8062)); }
+
+        .pb-notice {
+            margin-top: 10px;
+            font-size: 0.82em;
+            color: var(--primary-green-dark, var(--primary-burgundy, #6d8062));
+        }
+
+        .pb-restore {
+            margin-top: 12px;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 0.8em;
+            color: var(--text-light, #6b6b6b);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .pb-restore:hover { color: var(--primary-burgundy, #8b3a4a); }
+
+        .pb-hint {
+            margin: 8px 0 0;
+            font-size: 0.75em;
+            line-height: 1.5;
+            color: var(--text-light, #6b6b6b);
+        }
+
+        @media (max-width: 600px) {
+            .pb-add { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            .prepared-by-manage { display: none !important; }
+        }
+
+        /* ===================== SPA ADDITIONS ===================== */
+        .warn-box {
+            margin: -6px 0 24px;
+            padding: 12px 14px;
+            background: #fdf3e2;
+            border-left: 3px solid #c98a2b;
+            border-radius: 4px;
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: #7a4c00;
+        }
+
+        .warn-box p + p { margin-top: 6px; }
+
+        .quote-item.warn-line {
+            color: #a3651a;
+            font-size: 0.85em;
+            border-bottom: none;
+            padding: 4px 0;
+        }
+
+        .occupancy-hint { margin: -16px 0 22px; }
+    </style>
+</head>
+<body>
+<style>
+/* Dashboard tab bar - shared across the tools, deliberately self-contained so
+   it cannot pick up or disturb each tool's own styling. */
+/* z-index 400 keeps the bar above each tool's own chrome and above the
+   arrivals drop overlay (300), but below the golf quote modal (1000) so that
+   modal still covers the page as it should. */
+.rdash-nav{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;background:#2a2e3a;padding:10px 20px;
+  font-family:'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.3;box-shadow:0 1px 4px rgba(0,0,0,.18);position:relative;z-index:400}
+.rdash-nav *{box-sizing:border-box}
+.rdash-brand{color:#f5f1e8;font-weight:600;font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;
+  text-decoration:none;white-space:nowrap;padding:4px 0}
+.rdash-brand:hover{color:#fff}
+.rdash-links{display:flex;gap:4px;flex-wrap:wrap}
+.rdash-links a{color:#c9c6bd;font-size:.78rem;font-weight:500;letter-spacing:.03em;text-decoration:none;
+  padding:7px 13px;border-radius:4px;white-space:nowrap;transition:background .15s ease,color .15s ease}
+.rdash-links a:hover{background:rgba(255,255,255,.12);color:#fff}
+.rdash-links a[aria-current="page"]{background:#8fa17e;color:#fff;font-weight:600}
+@media (max-width:640px){.rdash-nav{padding:10px 14px}.rdash-links a{padding:6px 10px;font-size:.74rem}}
+@media print{.rdash-nav{display:none!important}}
+</style>
+<nav class="rdash-nav">
+  <a class="rdash-brand" href="../">Reservations AI</a>
+  <div class="rdash-links">
+    <a href="../golf-quoting-tool/">Golf quoting tool</a>
+    <a href="../spa-quoting-tool/" aria-current="page">Spa quoting tool</a>
+    <a href="../forecast/">Forecast</a>
+    <a href="../morning-brief/">Morning Brief</a>
+    <a href="../golf-matrix-pricing/">Golf Matrix pricing</a>
+    <a href="../daily-arrivals/">Daily arrivals</a>
+  </div>
+</nav>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <img src="https://res.cloudinary.com/dnpcsbkz4/image/upload/v1776162028/vale_logo_April_2026_p4grbk.jpg" alt="Vale Resort Logo" class="header-logo">
+                <h1>THE VALE RESORT</h1>
+                <p>Spa Breaks Quotation Assistant</p>
+                <p class="header-tagline">Create your bespoke spa break proposal in minutes</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>Spa Break Details</h2>
+
+                <!-- =============== CUSTOMER DETAILS =============== -->
+                <div class="section-subtitle">Customer Details</div>
+                <div class="date-grid">
+                    <div class="form-group">
+                        <label for="customerName">Customer Name</label>
+                        <input type="text" id="customerName" placeholder="e.g. Andrew Barr" oninput="recalculate();">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Phone Number</label>
+                        <input type="tel" id="customerPhone" placeholder="e.g. 07700 900123" oninput="recalculate();">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="customerEmail">Email Address</label>
+                    <input type="email" id="customerEmail" placeholder="e.g. a.barr@example.co.uk" oninput="recalculate();">
+                    <div class="helper-text">Shown on the quote and the PDF. Leave any field blank to omit it.</div>
+                </div>
+
+                <!-- =============== BOOKING DETAILS =============== -->
+                <div class="section-subtitle">Booking Details</div>
+                <div class="date-grid">
+                    <div class="form-group">
+                        <label for="spaArrivalDate">Arrival Date</label>
+                        <input type="date" id="spaArrivalDate" onchange="recalculate();">
+                    </div>
+                    <div class="form-group">
+                        <label for="spaNights">Number of Nights</label>
+                        <input type="number" id="spaNights" min="1" value="1" oninput="recalculate();">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="spaPackage">Package Type</label>
+                    <select id="spaPackage" onchange="recalculate();"></select>
+                    <div class="helper-text" id="spaRateHint"></div>
+                </div>
+
+                <div class="date-grid">
+                    <div class="form-group">
+                        <label for="spaRooms">Number of Rooms</label>
+                        <input type="number" id="spaRooms" min="1" value="1" oninput="recalculate();">
+                    </div>
+                    <div class="form-group">
+                        <label for="spaGuests">Number of Guests</label>
+                        <input type="number" id="spaGuests" min="1" value="2" oninput="recalculate();">
+                    </div>
+                </div>
+                <div class="helper-text occupancy-hint" id="spaOccupancyHint"></div>
+                <div class="warn-box" id="spaWarnings" style="display:none;"></div>
+
+                <div class="form-group">
+                    <label for="spaPreparedBy">Prepared By</label>
+                    <select id="spaPreparedBy" onchange="recalculate();">
+                        <option value="">Select team member</option>
+                        <option value="Grace Ritchie">Grace Ritchie</option>
+                        <option value="Shauna Archer">Shauna Archer</option>
+                        <option value="Michelle Condon">Michelle Condon</option>
+                        <option value="Sarah Clarke">Sarah Clarke</option>
+                        <option value="Sara Talbot">Sara Talbot</option>
+                        <option value="Amanda Eyre">Amanda Eyre</option>
+                        <option value="Victoria Howells">Victoria Howells</option>
+                        <option value="Anna Tarnacka">Anna Tarnacka</option>
+                        <option value="Lara Rogers">Lara Rogers</option>
+                    </select>
+                </div>
+
+                <div class="form-section" style="margin-top:20px;">
+                    <h2 class="section-heading">Custom Items</h2>
+                    <p class="helper-text" style="margin-bottom:12px;">Add custom line items (e.g., extra treatments, an evening meal or special requests).</p>
+                    <div id="customItemsContainer"></div>
+                    <button type="button" class="btn btn-secondary" onclick="addCustomItem()" style="margin-top:8px; padding:10px 16px; font-size:0.9em;">+ Add Custom Item</button>
+
+                    <h2 class="section-heading" style="margin-top:24px;">Custom Discounts</h2>
+                    <p class="helper-text" style="margin-bottom:12px;">Add custom discount lines (subtracted from total).</p>
+                    <div id="customDiscountsContainer"></div>
+                    <button type="button" class="btn btn-secondary" onclick="addCustomDiscount()" style="margin-top:8px; padding:10px 16px; font-size:0.9em;">+ Add Custom Discount</button>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="generateQuote()" id="generateBtn">Generate Quote</button>
+                    <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+                </div>
+            </div>
+
+            <div class="quote-section">
+                <h2>Quote Summary</h2>
+                <div class="quote-status" id="quoteStatus">&#10003; Quote generated &mdash; make changes above to update</div>
+                <div id="quoteSummary">
+                    <div class="quote-item" style="color: #999;">Select an arrival date to price the break</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Your Spa Break Quote</div>
+            <div id="modalBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Edit Quote</button>
+                <button class="btn btn-primary" onclick="downloadPDFQuote()">Download PDF Quote</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ===================== PREPARED BY TEAM LIST =====================
+           Lets the team add and remove the names in the Prepared By list
+           without editing the page. The list is saved in this browser under a
+           key of this tool's own, so it survives a reload and each tool keeps
+           its own team. Names added here can carry an email address, which is
+           the one printed as the contact on the quote and used in the email.
+        ------------------------------------------------------------------ */
+        const PreparedByStore = (function () {
+            const VERSION = 1;
+
+            /* The addresses the tools shipped with. A name added through the
+               panel carries whatever address is entered for it instead. */
+            const DEFAULT_EMAILS = {
+                'Grace Ritchie': 'reservations@valeresort.com',
+                'Shauna Archer': 'reservations@valeresort.com',
+                'Michelle Condon': 'reservations@valeresort.com',
+                'Sarah Clarke': 'reservations@valeresort.com',
+                'Sara Talbot': 'reservations@valeresort.com',
+                'Amanda Eyre': 'reservations@valeresort.com',
+                'Victoria Howells': 'reservations@valeresort.com',
+                'Anna Tarnacka': 'reservations@valeresort.com',
+                'Lara Rogers': 'reservations@valeresort.com'
+            };
+
+            let storageKey = 'valeQuoting.preparedBy';
+            let defaultEmails = DEFAULT_EMAILS;   // addresses shipped with the tool
+            let defaults = [];           // the names shipped with the tool
+            let people = [];             // the list in force now
+            let fallbackEmail = 'reservations@valeresort.com';
+            let selects = [];
+            let panels = [];
+            let open = false;
+            let notice = '';
+
+            function esc(s) {
+                return String(s == null ? '' : s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            /* localStorage is unavailable in some browsers when the page is
+               opened straight off disk, so never let it break the tool: the
+               list still works, it just will not outlive the tab. */
+            function read() {
+                try {
+                    const raw = window.localStorage.getItem(storageKey);
+                    if (!raw) return null;
+                    const data = JSON.parse(raw);
+                    if (!data || !Array.isArray(data.people)) return null;
+                    return data.people
+                        .filter(p => p && typeof p.name === 'string' && p.name.trim())
+                        .map(p => ({ name: p.name.trim(), email: (p.email || '').trim() }));
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function write() {
+                try {
+                    window.localStorage.setItem(storageKey, JSON.stringify({ v: VERSION, people: people }));
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            function init(cfg) {
+                cfg = cfg || {};
+                if (cfg.key) storageKey = 'valeQuoting.preparedBy.' + cfg.key;
+                if (cfg.fallbackEmail) fallbackEmail = cfg.fallbackEmail;
+                defaultEmails = cfg.defaultEmails || DEFAULT_EMAILS;
+
+                selects = (cfg.selectIds || []).map(id => document.getElementById(id)).filter(Boolean);
+                if (!selects.length) return;
+
+                // The names shipped with the tool are the ones already in the
+                // markup, so each tool keeps the team it was built with.
+                defaults = Array.from(selects[0].options)
+                    .filter(o => o.value)
+                    .map(o => ({ name: o.value, email: defaultEmails[o.value] || '' }));
+
+                const stored = read();
+                people = stored || defaults.slice();
+
+                selects.forEach(buildPanel);
+                render();
+            }
+
+            function indexOfName(name) {
+                const key = String(name || '').trim().toLowerCase();
+                for (let i = 0; i < people.length; i++) {
+                    if (people[i].name.toLowerCase() === key) return i;
+                }
+                return -1;
+            }
+
+            /* The contact address for a name: what was entered for them here,
+               then the address shipped with the tool, then the team inbox. */
+            function emailFor(name, fallback) {
+                const i = indexOfName(name);
+                if (i >= 0 && people[i].email) return people[i].email;
+                return defaultEmails[name] || fallback || fallbackEmail;
+            }
+
+            function names() { return people.map(p => p.name); }
+
+            function add(name, email) {
+                name = String(name || '').trim();
+                email = String(email || '').trim();
+                if (!name) { flash('Enter a name to add.'); return false; }
+                if (indexOfName(name) >= 0) { flash(name + ' is already on the list.'); return false; }
+                if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { flash('That email address does not look right.'); return false; }
+                people.push({ name: name, email: email });
+                persist(name + ' added.');
+                return true;
+            }
+
+            function remove(name) {
+                return removeAt(indexOfName(name));
+            }
+
+            /* Removal goes by position: a name can carry an apostrophe, which
+               would not survive a round trip through an inline handler. */
+            function removeAt(i) {
+                if (i < 0 || i >= people.length) return false;
+                const removed = people[i].name;
+                people.splice(i, 1);
+                persist(removed + ' removed.');
+                return true;
+            }
+
+            function restoreDefaults() {
+                people = defaults.slice();
+                persist('Default list restored.');
+            }
+
+            function persist(message) {
+                const saved = write();
+                flash(saved ? message : message + ' (could not be saved in this browser - it will last until you close the tab)');
+                render();
+            }
+
+            function flash(message) {
+                notice = message || '';
+                if (flash.timer) clearTimeout(flash.timer);
+                flash.timer = setTimeout(function () { notice = ''; renderPanels(); }, 6000);
+                renderPanels();
+            }
+
+            /* ---------- the Prepared By dropdowns ---------- */
+            function renderSelects() {
+                selects.forEach(sel => {
+                    const chosen = sel.value;
+                    const placeholder = sel.options.length && !sel.options[0].value
+                        ? sel.options[0].textContent
+                        : 'Select team member';
+                    let html = '<option value="">' + esc(placeholder) + '</option>';
+                    people.forEach(p => {
+                        html += '<option value="' + esc(p.name) + '">' + esc(p.name) + '</option>';
+                    });
+                    sel.innerHTML = html;
+                    if (chosen && indexOfName(chosen) >= 0) {
+                        sel.value = chosen;
+                    } else if (chosen) {
+                        // Whoever was selected has just been removed.
+                        sel.value = '';
+                        sel.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+
+            /* ---------- the manage panel ---------- */
+            /* Sit the panel below the field. Where the field is one cell of a
+               two-column grid, go out to the grid so the panel gets the full
+               width rather than becoming a stray half-width cell. */
+            function anchorFor(sel) {
+                let node = sel.closest('.form-group') || sel;
+                const parent = node.parentElement;
+                if (parent) {
+                    let display = '';
+                    try { display = window.getComputedStyle(parent).display; } catch (e) { /* ignore */ }
+                    if (display === 'grid' || display === 'inline-grid') node = parent;
+                }
+                return node;
+            }
+
+            function buildPanel(sel) {
+                const wrap = document.createElement('div');
+                wrap.className = 'prepared-by-manage';
+                anchorFor(sel).insertAdjacentElement('afterend', wrap);
+                panels.push(wrap);
+            }
+
+            function renderPanels() {
+                panels.forEach((wrap, idx) => {
+                    const rows = people.length
+                        ? people.map((p, i) =>
+                            '<li class="pb-person">'
+                            + '<span class="pb-name">' + esc(p.name) + '</span>'
+                            + '<span class="pb-email">' + esc(p.email || defaultEmails[p.name] || '') + '</span>'
+                            + '<button type="button" class="pb-remove" title="Remove ' + esc(p.name) + '"'
+                            + ' onclick="PreparedByStore.removeAt(' + i + ')">&times;</button>'
+                            + '</li>').join('')
+                        : '<li class="pb-empty">No team members yet - add one below.</li>';
+
+                    wrap.innerHTML =
+                        '<button type="button" class="pb-toggle" aria-expanded="' + (open ? 'true' : 'false') + '"'
+                        + ' onclick="PreparedByStore.toggle()">'
+                        + (open ? '&#9662;' : '&#9656;') + ' Manage team members</button>'
+                        + (open
+                            ? '<div class="pb-panel">'
+                            + '<ul class="pb-list">' + rows + '</ul>'
+                            + '<div class="pb-add">'
+                            + '<input type="text" class="pb-input-name" placeholder="Full name" aria-label="New team member name">'
+                            + '<input type="email" class="pb-input-email" placeholder="Email (optional)" aria-label="New team member email">'
+                            + '<button type="button" class="pb-add-btn" onclick="PreparedByStore.addFromPanel(' + idx + ')">Add</button>'
+                            + '</div>'
+                            + (notice ? '<div class="pb-notice">' + esc(notice) + '</div>' : '')
+                            + '<button type="button" class="pb-restore" onclick="PreparedByStore.restoreDefaults()">Restore default list</button>'
+                            + '<p class="pb-hint">Saved in this browser for this tool. An email is used as the contact on the quote; leave it blank to use the team inbox.</p>'
+                            + '</div>'
+                            : '');
+                });
+            }
+
+            function addFromPanel(idx) {
+                const wrap = panels[idx];
+                if (!wrap) return;
+                const nameEl = wrap.querySelector('.pb-input-name');
+                const emailEl = wrap.querySelector('.pb-input-email');
+                if (add(nameEl.value, emailEl.value)) {
+                    nameEl.value = '';
+                    emailEl.value = '';
+                }
+                const again = panels[idx] && panels[idx].querySelector('.pb-input-name');
+                if (again) again.focus();
+            }
+
+            function toggle() {
+                open = !open;
+                notice = '';
+                renderPanels();
+            }
+
+            function render() {
+                renderSelects();
+                renderPanels();
+            }
+
+            return {
+                init: init, emailFor: emailFor, names: names, add: add, remove: remove,
+                removeAt: removeAt, restoreDefaults: restoreDefaults,
+                addFromPanel: addFromPanel, toggle: toggle,
+            };
+        })();
+
+        /* ===================== QUOTE LINE REORDERING =====================
+           Lets the user move quote lines up/down (or drag them) so the quote
+           reads in whatever order suits the customer. The chosen order is held
+           against each line so it survives the recalculation that runs on every
+           input change, and it carries through to the PDF/email output because
+           the summary array itself is reordered.
+        ------------------------------------------------------------------- */
+        const QuoteLineOrder = (function () {
+            let preferred = [];      // keys, in the order the user has chosen
+            let current = [];        // keys, in the order currently on screen
+            let recalcFn = null;     // the tool's recalculate(), to re-render
+            let containerId = 'quoteSummary';
+            let dragBound = false;
+            let dragFrom = -1;
+
+            function init(fn, id) {
+                if (typeof fn === 'function') recalcFn = fn;
+                if (id) containerId = id;
+            }
+
+            function container() { return document.getElementById(containerId); }
+
+            function notify() {
+                if (typeof recalcFn === 'function') recalcFn();
+                else if (typeof window.recalculate === 'function') window.recalculate();
+            }
+
+            /* A key that identifies a line across recalculations. Numbers,
+               currency and bracketed detail are stripped so that "Buggies
+               (4 x GBP50.00)" keeps its position when the quantity changes. */
+            function keyFor(item, seen) {
+                let base = String(item.orderKey || item.label || item.desc || '')
+                    .replace(/<[^>]*>/g, ' ')
+                    .replace(/&[a-z]+;/gi, ' ')
+                    .replace(/\([^)]*\)/g, ' ')
+                    .replace(/\b[xX]\b/g, ' ')
+                    .replace(/[0-9£$%.,:\/×-]+/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .toLowerCase();
+                if (!base) base = 'line';
+                const kind = item.type || (item.discount ? 'discount' : (item.tbc ? 'tbc' : 'line'));
+                const key = kind + '|' + base;
+                const n = (seen[key] = (seen[key] || 0) + 1);
+                return n > 1 ? key + '#' + n : key;
+            }
+
+            /* Reorders `items` in place to follow the user's chosen order.
+               Lines with no saved position stay beside the line they were
+               generated after, so newly added items appear where expected. */
+            function apply(items) {
+                if (!Array.isArray(items)) return items;
+                if (items.length === 0) { current = []; return items; }
+
+                const seen = {};
+                const entries = items.map((item, i) => ({ item: item, key: keyFor(item, seen), i: i, rank: -1, sub: 1 }));
+
+                let lastRank = -1;
+                entries.forEach(e => {
+                    const idx = preferred.indexOf(e.key);
+                    if (idx >= 0) { e.rank = idx; e.sub = 0; lastRank = idx; }
+                    else { e.rank = lastRank; e.sub = 1; }
+                });
+                entries.sort((a, b) => (a.rank - b.rank) || (a.sub - b.sub) || (a.i - b.i));
+
+                current = entries.map(e => e.key);
+                const sorted = entries.map(e => e.item);
+                items.splice.apply(items, [0, items.length].concat(sorted));
+
+                bindDrag();
+                return items;
+            }
+
+            /* Attributes for the line's wrapper element. */
+            function rowAttrs(index) {
+                return 'data-line-index="' + index + '"';
+            }
+
+            /* Up/down buttons plus a drag grip for the line at `index`. */
+            function controls(index) {
+                const last = current.length - 1;
+                const up = index <= 0 ? ' disabled' : '';
+                const down = index >= last ? ' disabled' : '';
+                return '<span class="line-order-controls">'
+                    + '<span class="line-order-grip" draggable="true" title="Drag to reorder">&#10303;</span>'
+                    + '<button type="button" class="line-order-btn" data-dir="-1" onclick="QuoteLineOrder.move(' + index + ', -1)" title="Move up"' + up + '>&#9650;</button>'
+                    + '<button type="button" class="line-order-btn" data-dir="1" onclick="QuoteLineOrder.move(' + index + ', 1)" title="Move down"' + down + '>&#9660;</button>'
+                    + '</span>';
+            }
+
+            /* Hint / reset strip shown above the lines. */
+            function bar() {
+                if (current.length < 2) return '';
+                const reset = isCustomised()
+                    ? '<button type="button" class="line-order-reset" onclick="QuoteLineOrder.reset()">Reset order</button>'
+                    : '';
+                return '<div class="line-order-bar"><span>Drag a line or use &#9650;&#9660; to reorder</span>' + reset + '</div>';
+            }
+
+            function move(index, direction) {
+                moveTo(index, index + (direction > 0 ? 2 : -1), direction);
+            }
+
+            /* Moves the line at `from` so it sits before position `insertBefore`
+               (an index in the list as it stands before the move). */
+            function moveTo(from, insertBefore, focusDir) {
+                const keys = current.slice();
+                if (from < 0 || from >= keys.length) return;
+                if (insertBefore < 0 || insertBefore > keys.length) return;
+                const key = keys.splice(from, 1)[0];
+                let target = insertBefore > from ? insertBefore - 1 : insertBefore;
+                target = Math.max(0, Math.min(keys.length, target));
+                if (target === from) return;
+                keys.splice(target, 0, key);
+                preferred = keys;
+                notify();
+                refocus(key, focusDir);
+            }
+
+            /* Keeps the keyboard on the line that just moved. */
+            function refocus(key, focusDir) {
+                const idx = current.indexOf(key);
+                if (idx < 0) return;
+                requestAnimationFrame(function () {
+                    const div = container();
+                    if (!div) return;
+                    const row = div.querySelector('.quote-item[data-line-index="' + idx + '"]');
+                    if (!row) return;
+                    let btn = focusDir ? row.querySelector('.line-order-btn[data-dir="' + focusDir + '"]') : null;
+                    if (!btn || btn.disabled) btn = row.querySelector('.line-order-btn:not(:disabled)');
+                    if (btn) btn.focus();
+                });
+            }
+
+            function isCustomised() { return preferred.length > 0; }
+
+            /* Back to the tool's natural order. */
+            function reset() {
+                preferred = [];
+                notify();
+            }
+
+            /* Same as reset() but without re-running the calculation - for
+               resetForm(), which rebuilds everything itself. */
+            function clear() {
+                preferred = [];
+                current = [];
+            }
+
+            /* ---------- drag & drop (delegated, bound once) ---------- */
+            function bindDrag() {
+                if (dragBound) return;
+                const div = container();
+                if (!div) return;
+                dragBound = true;
+
+                div.addEventListener('dragstart', function (e) {
+                    const row = e.target.closest ? e.target.closest('.quote-item[data-line-index]') : null;
+                    if (!row) return;
+                    dragFrom = parseInt(row.getAttribute('data-line-index'), 10);
+                    row.classList.add('line-drag-source');
+                    if (e.dataTransfer) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        try { e.dataTransfer.setData('text/plain', String(dragFrom)); } catch (err) { /* ignore */ }
+                        if (e.dataTransfer.setDragImage) e.dataTransfer.setDragImage(row, 12, 12);
+                    }
+                });
+
+                div.addEventListener('dragover', function (e) {
+                    if (dragFrom < 0) return;
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                    const row = e.target.closest ? e.target.closest('.quote-item[data-line-index]') : null;
+                    clearMarkers(false);
+                    if (!row) return;
+                    const box = row.getBoundingClientRect();
+                    row.classList.add(e.clientY < box.top + box.height / 2 ? 'line-drop-before' : 'line-drop-after');
+                });
+
+                div.addEventListener('drop', function (e) {
+                    if (dragFrom < 0) return;
+                    e.preventDefault();
+                    const row = e.target.closest ? e.target.closest('.quote-item[data-line-index]') : null;
+                    const from = dragFrom;
+                    dragFrom = -1;
+                    clearMarkers(true);
+                    if (!row) return;
+                    const over = parseInt(row.getAttribute('data-line-index'), 10);
+                    const box = row.getBoundingClientRect();
+                    const after = e.clientY >= box.top + box.height / 2;
+                    moveTo(from, after ? over + 1 : over);
+                });
+
+                div.addEventListener('dragend', function () {
+                    dragFrom = -1;
+                    clearMarkers(true);
+                });
+            }
+
+            function clearMarkers(includeSource) {
+                const div = container();
+                if (!div) return;
+                div.querySelectorAll('.line-drop-before, .line-drop-after').forEach(function (el) {
+                    el.classList.remove('line-drop-before', 'line-drop-after');
+                });
+                if (includeSource) {
+                    div.querySelectorAll('.line-drag-source').forEach(function (el) {
+                        el.classList.remove('line-drag-source');
+                    });
+                }
+            }
+
+            return {
+                init: init, apply: apply, rowAttrs: rowAttrs, controls: controls, bar: bar,
+                move: move, moveTo: moveTo, reset: reset, clear: clear, isCustomised: isCustomised
+            };
+        })();
+
+        /* ===================== CUSTOMER DETAILS =====================
+           Who the quote is for. The details are read on every recalculation
+           and travel with the quote into the preview and the PDF.
+        ----------------------------------------------------------------- */
+        function escHtml(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function readCustomer() {
+            const val = id => {
+                const el = document.getElementById(id);
+                return el ? (el.value || '').trim() : '';
+            };
+            return { name: val('customerName'), email: val('customerEmail'), phone: val('customerPhone') };
+        }
+
+        function hasCustomer(c) {
+            return !!(c && (c.name || c.email || c.phone));
+        }
+
+        /* Rows for the quote preview. */
+        function modalCustomer(c) {
+            if (!hasCustomer(c)) return '';
+            let html = '';
+            if (c.name) html += modalItem('Customer', escHtml(c.name));
+            if (c.email) html += modalItem('Customer Email', escHtml(c.email));
+            if (c.phone) html += modalItem('Customer Phone', escHtml(c.phone));
+            return html;
+        }
+
+        /* The Prepared For block at the top of the PDF's right-hand column. */
+        function customerMetaRows(c) {
+            if (!hasCustomer(c)) return '';
+            let rows = '<div class="meta-label" style="margin-bottom:4px;">Prepared For</div>';
+            if (c.name) rows += `<div class="meta-row"><span class="meta-value" style="font-weight:bold;">${escHtml(c.name)}</span></div>`;
+            if (c.email) rows += `<div class="meta-row"><span class="meta-value">${escHtml(c.email)}</span></div>`;
+            if (c.phone) rows += `<div class="meta-row"><span class="meta-value">${escHtml(c.phone)}</span></div>`;
+            return rows + '<div style="height:10px;"></div>';
+        }
+
+        /* ===================== CUSTOM ITEMS (multi-row) ===================== */
+        let customItemCounter = 0;
+        function addCustomItem(desc = '', qty = 1, price = 0) {
+            const id = customItemCounter++;
+            const container = document.getElementById('customItemsContainer');
+            const div = document.createElement('div');
+            div.id = `customItemRow_${id}`;
+            div.style.cssText = 'display:grid; grid-template-columns:1fr 80px 120px 38px; gap:10px; align-items:end; margin-bottom:10px;';
+            div.innerHTML = `
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.82em;">Description</label>
+                    <input type="text" class="custom-item-desc" placeholder="Item description" value="${desc.replace(/"/g, '&quot;')}" oninput="recalculate();">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.82em;">Qty</label>
+                    <input type="number" class="custom-item-qty" min="1" value="${qty}" oninput="recalculate();">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.82em;">Unit Price (£)</label>
+                    <input type="number" class="custom-item-price" min="0" step="0.01" value="${price}" oninput="recalculate();">
+                </div>
+                <button type="button" onclick="removeCustomItem('customItemRow_${id}')" style="background:#c75366; color:white; border:none; border-radius:4px; padding:13px 8px; cursor:pointer; font-weight:bold; font-size:1.2em; line-height:1;" title="Remove">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeCustomItem(rowId) {
+            const el = document.getElementById(rowId);
+            if (el) el.remove();
+            recalculate();
+        }
+
+        function readCustomItems() {
+            const items = [];
+            document.querySelectorAll('#customItemsContainer > div').forEach(row => {
+                const desc = row.querySelector('.custom-item-desc').value.trim();
+                const qty = Math.max(0, parseInt(row.querySelector('.custom-item-qty').value) || 0);
+                const price = Math.max(0, parseFloat(row.querySelector('.custom-item-price').value) || 0);
+                if (desc && qty > 0 && price > 0) {
+                    const total = qty * price;
+                    items.push({
+                        label: qty > 1 ? `${desc} (${qty} x £${price.toFixed(2)})` : desc,
+                        total, desc, qty, price
+                    });
+                }
+            });
+            return items;
+        }
+
+        /* ===================== CUSTOM DISCOUNTS (multi-row) ===================== */
+        let customDiscountCounter = 0;
+        function addCustomDiscount(desc = '', amount = 0) {
+            const id = customDiscountCounter++;
+            const container = document.getElementById('customDiscountsContainer');
+            const div = document.createElement('div');
+            div.id = `customDiscountRow_${id}`;
+            div.style.cssText = 'display:grid; grid-template-columns:1fr 140px 38px; gap:10px; align-items:end; margin-bottom:10px;';
+            div.innerHTML = `
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.82em;">Description</label>
+                    <input type="text" class="custom-discount-desc" placeholder="Discount description" value="${desc.replace(/"/g, '&quot;')}" oninput="recalculate();">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.82em;">Discount (£)</label>
+                    <input type="number" class="custom-discount-amount" min="0" step="0.01" value="${amount}" oninput="recalculate();">
+                </div>
+                <button type="button" onclick="removeCustomDiscount('customDiscountRow_${id}')" style="background:#c75366; color:white; border:none; border-radius:4px; padding:13px 8px; cursor:pointer; font-weight:bold; font-size:1.2em; line-height:1;" title="Remove">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeCustomDiscount(rowId) {
+            const el = document.getElementById(rowId);
+            if (el) el.remove();
+            recalculate();
+        }
+
+        function readCustomDiscounts() {
+            const discounts = [];
+            document.querySelectorAll('#customDiscountsContainer > div').forEach(row => {
+                const desc = row.querySelector('.custom-discount-desc').value.trim();
+                const amount = Math.max(0, parseFloat(row.querySelector('.custom-discount-amount').value) || 0);
+                if (desc && amount > 0) {
+                    discounts.push({ desc, amount, label: desc });
+                }
+            });
+            return discounts;
+        }
+
+        /* ===================== SHARED QUOTE & PDF HELPERS ===================== */
+
+        function formatDate(iso) {
+            try {
+                const d = new Date(iso);
+                if (!isNaN(d.getTime())) {
+                    return d.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                }
+            } catch (e) {}
+            return iso || 'Not selected';
+        }
+
+        function modalItem(label, value) {
+            return `<div class="modal-item"><div class="modal-item-label">${label}</div><div class="modal-item-value">${value}</div></div>`;
+        }
+
+        function closeModal() {
+            document.getElementById('quoteModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function pdfStyles() {
+            return `
+                * { box-sizing: border-box; margin: 0; padding: 0; }
+                body { font-family: 'Georgia', serif; font-size: 12px; color: #2a2e3a; background: #fff; padding: 32px 40px; max-width: 820px; margin: 0 auto; }
+                .logo-area { text-align: center; border-bottom: 2px solid #8b3a4a; padding-bottom: 12px; margin-bottom: 16px; }
+                .logo-area img { max-width: 140px; height: auto; margin-bottom: 8px; }
+                .logo-area h1 { font-size: 22px; letter-spacing: 4px; color: #2a2e3a; text-transform: uppercase; font-weight: normal; }
+                .logo-area .tagline { font-size: 10px; letter-spacing: 2px; color: #6d8062; text-transform: uppercase; margin-top: 3px; }
+                .doc-title { text-align: center; font-size: 14px; letter-spacing: 3px; color: #8b3a4a; text-transform: uppercase; margin-bottom: 18px; font-weight: normal; }
+                .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #c9c1ad; margin-bottom: 14px; }
+                .meta-col { padding: 10px 14px; }
+                .meta-col:first-child { border-right: 1px solid #c9c1ad; }
+                .meta-row { margin-bottom: 4px; line-height: 1.4; }
+                .meta-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #6d8062; display: block; margin-bottom: 1px; }
+                .meta-value { font-size: 12px; color: #2a2e3a; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+                thead tr { background: #2a2e3a; color: #fff; }
+                thead th { padding: 8px 10px; font-weight: normal; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+                thead th:last-child, thead th:nth-child(3), thead th:nth-child(2) { text-align: right; }
+                thead th:nth-child(2) { text-align: center; }
+                tbody tr:nth-child(even) { background: #f7f4eb; }
+                .totals-table { width: 100%; border-collapse: collapse; margin-top: 0; border: 1px solid #c9c1ad; border-top: none; page-break-inside: avoid; }
+                .totals-table td { padding: 7px 10px; font-size: 12px; }
+                .totals-table .tot-label { color: #5a5a5a; }
+                .totals-table .tot-value { text-align: right; }
+                .totals-table tr.grand-total td { background: #2a2e3a; color: #fff; font-size: 13px; font-weight: bold; border-top: 2px solid #2a2e3a; }
+                .totals-table tr.sub-row td { border-bottom: 1px solid #dcd6c7; }
+                .footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #c9c1ad; text-align: center; font-size: 10px; color: #6d8062; line-height: 1.8; letter-spacing: 0.5px; }
+                .section-title { font-size: 16px; letter-spacing: 3px; color: #8b3a4a; text-transform: uppercase; margin: 20px 0 12px 0; font-weight: normal; text-align: center; }
+                .info-block { margin-bottom: 14px; line-height: 1.6; font-size: 12px; }
+                .info-block h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #6d8062; margin-bottom: 6px; }
+                .info-block p, .info-block li { color: #2a2e3a; }
+                .info-block ul { margin-left: 18px; }
+                .include-row td { padding: 12px 20px; border-bottom: 1px solid #dcd6c7; font-size: 13px; vertical-align: middle; }
+                .green-dot { display: inline-block; width: 10px; height: 10px; background: #8fa17e; border-radius: 50%; margin-right: 14px; vertical-align: middle; }
+                .menu-item { padding: 6px 0; font-size: 12px; color: #2a2e3a; border-bottom: 1px solid #eee; }
+                .menu-divider { text-align: center; font-size: 16px; letter-spacing: 4px; color: #8b3a4a; padding: 12px 0; }
+                /* Print layout. Sections follow one another rather than each
+                   starting a new page, so a page is only ever as empty as the
+                   end of the document. These rules stop the flow splitting
+                   things that should stay together. */
+                @page { size: A4; margin: 12mm 0; }
+                .pdf-section { margin-top: 16px; }
+                .doc-title, .section-title, .info-block h3, .menu-divider { break-after: avoid; page-break-after: avoid; }
+                tr, li, .meta-grid, .totals-table, .logo-area, .menu-item, .footer { break-inside: avoid; page-break-inside: avoid; }
+                .footer { break-before: avoid; page-break-before: avoid; }
+                .keep-with-next { break-after: avoid; page-break-after: avoid; }
+                /* The closing terms move as one, so an overflow never leaves a
+                   last page holding a stray line or two. */
+                .keep-together { break-inside: avoid; page-break-inside: avoid; }
+                p, li { orphans: 3; widows: 3; }
+                @media print { body { padding: 0 28px; } }
+            `;
+        }
+
+        function pdfLogo() {
+            return `<div class="logo-area">
+                <img src="https://res.cloudinary.com/dnpcsbkz4/image/upload/v1777282806/ValeResortLogoBlackwriting_vdwqoc.png" alt="Vale Resort Logo">
+                <h1>The Vale Resort</h1>
+                <div class="tagline">Hensol &bull; Vale of Glamorgan</div>
+            </div>`;
+        }
+
+        function pdfRow(desc, qty, unitPrice, total) {
+            return `<tr>
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7;">${desc}</td>
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7; text-align:center;">${qty}</td>
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7; text-align:right;">\u00A3${unitPrice.toFixed(2)}</td>
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7; text-align:right;">\u00A3${total.toFixed(2)}</td>
+            </tr>`;
+        }
+
+        function openPDFWindow(html) {
+            const printWindow = window.open('', '_blank', 'width=850,height=1100');
+            if (!printWindow) { alert('Please allow popups for this site to download the PDF.'); return; }
+            printWindow.document.write(html);
+            printWindow.document.close();
+            setTimeout(() => { printWindow.print(); }, 500);
+        }
+
+        /* ===================== SPA PACKAGES =====================
+           Rates and inclusions are from the reservations team's spa package
+           sheet. Each package is one night: rates are per person, based on
+           two guests sharing a room (so the room rate is twice the per person
+           rate), except Golf & Spa, which is priced per couple.
+        ---------------------------------------------------------------- */
+        const SPA_CONTACT_PHONE = '01443 665888';
+        const SPA_WEBSITE = 'valeresort.com/spa';
+        const SPA_TERMS_URL = 'https://www.valeresort.com/spa-terms-conditions-2/';
+        const SINGLE_SUPPLEMENT = 50;
+        const DINNER_ADD_ON_PP = 33;
+        const TOGETHER_DEPOSIT_PP = 50;
+
+        const SPA_PACKAGES = [
+            {
+                key: 'full-bb', name: 'Spa Bed & Breakfast Break (Full Day)', short: 'Spa B&B Break (Full Day)',
+                pricing: 'person', rates: { sunThu: 165, fri: 180, sat: 200 },
+                session: 'full', dinner: false, treatments: 'full', payment: 'full'
+            },
+            {
+                key: 'half-bb', name: 'Spa Experience Bed & Breakfast Break (Half Day)', short: 'Spa Experience B&B (Half Day)',
+                pricing: 'person', rates: { sunThu: 150, fri: 165, sat: 185 },
+                session: 'half', dinner: false, treatments: 'half', payment: 'full'
+            },
+            {
+                key: 'half-dbb', name: 'Spa Experience, Dinner Bed & Breakfast Break (Half Day)', short: 'Spa Experience DB&B (Half Day)',
+                pricing: 'person', rates: { sunThu: 180, fri: 195, sat: 215 },
+                session: 'half', dinner: true, treatments: 'half', payment: 'full'
+            },
+            {
+                key: 'golf-spa', name: 'Golf & Spa Bed and Breakfast Break', short: 'Golf & Spa B&B Break',
+                pricing: 'couple', rates: { sunThu: 299, fri: 319, sat: 339 },
+                session: 'full', golf: true, dinner: false, treatments: 'full', payment: 'full'
+            },
+            {
+                key: 'together', name: 'Together Spa Break (Full Day)', short: 'Together Spa Break (Full Day)',
+                pricing: 'person', rates: { sunThu: 195, fri: 215, sat: 225 },
+                session: 'full', dinner: true, prosecco: true, treatments: 'full', payment: 'deposit', minGuests: 10
+            }
+        ];
+
+        /* The 50 minute treatment lists from the Vale Spa tariff. Full day
+           packages choose from the Full Day list, half day packages from the
+           Half Day list, as the package sheet sets out. */
+        const TREATMENTS = {
+            full: {
+                title: 'Full Day Treatment Choice',
+                items: [
+                    ['Reflexology', 'A holistic therapy applying pressure to points on the feet that correspond to organs and systems of the body, promoting overall wellbeing.', 'mf', true],
+                    ['TempleSpa Radiance Facial', 'A Vitamin C-infused facial designed to brighten, resurface and lift dull, tired skin for a firmer, more radiant appearance.', 'mf'],
+                    ['TempleSpa Champagne &amp; Truffles Facial', 'A luxury facial combining award-winning truffle skincare with specialist lifting massage to iron out deep lines, strengthen muscle tone and reduce puffiness.', 'mf', true],
+                    ['TempleSpa Rose Quartz Facial', 'Specialist lifting massage followed by facial drainage with light-reflective Rose Quartz stones, leaving the complexion glowing and more youthful.', 'mf'],
+                    ['Elemis Expert&trade; Touch Renew Facial', 'Hydrate, lift &amp; firm. Clinically proven formulas and skin-lifting massage improve firmness and reduce the look of fine lines and wrinkles.', 'mf'],
+                    ['TempleSpa Rocks of the Mediterranean', 'A warming hot stone massage using thermal basalt stones on energy points throughout the body to rebalance and harmonise.', 'mf', true],
+                    ['TempleSpa Drift Away Massage', 'A deeply relaxing top-to-toe massage with Frankincense, Lavender and Patchouli to soothe frazzled nerves and quieten an active mind. Amethyst Trust approved.', 'mf'],
+                    ['TempleSpa Feeling Good Massage', 'A revitalising power massage with vibrant Mediterranean citrus oils, leaving you re-energised and at ease.', 'mf'],
+                    ['TempleSpa Menopause Massage', 'Expert hands and Himalayan salt stones, with rhythmic stretches, gentle joint rotation and a lymph drainage facial to relieve stress and boost mood.', 'f'],
+                    ['TempleSpa Pregnancy Treatment', 'A full body massage designed for pregnancy, enjoyed without the need to lie on your tummy.', 'f']
+                ],
+                note: 'Upgrade to an Elemis Expert&trade; Tech Facial for an additional &pound;25.'
+            },
+            half: {
+                title: 'Half Day Treatment Choice',
+                items: [
+                    ['TempleSpa Drift Away Massage', 'A deeply relaxing top-to-toe massage with Frankincense, Lavender and Patchouli to soothe frazzled nerves and quieten an active mind. Amethyst Trust approved.', 'mf'],
+                    ['TempleSpa My Kinda Skin Facial', 'A facial tailored to your skin after analysis, including a signature massage and a relaxing scalp massage. Amethyst Trust approved.', 'mf'],
+                    ['TempleSpa Feeling Good Massage', 'A revitalising power massage with Bergamot, Sweet Orange, Lemon and cooling Mint to combat fatigue and encourage circulation.', 'mf'],
+                    ['TempleSpa Rose Quartz Facial', 'Specialist lifting massage followed by facial drainage with light-reflective Rose Quartz stones, leaving the complexion glowing and more youthful.', 'mf'],
+                    ['TempleSpa Pregnancy Treatment', 'A full body massage designed for pregnancy, enjoyed without the need to lie on your tummy.', 'f'],
+                    ['Elemis Expert&trade; Touch Renew', 'Hydrate, lift &amp; firm. Clinically proven formulas and skin-lifting massage improve firmness and reduce the look of fine lines and wrinkles.', 'mf'],
+                    ['TempleSpa Back &amp; Facial Treatment', 'Half facial and half back massage &mdash; the best of both worlds in one treatment.', 'mf'],
+                    ['TempleSpa Menopause Massage', 'Expert hands and Himalayan salt stones, with rhythmic stretches, gentle joint rotation and a lymph drainage facial to relieve stress and boost mood.', 'f'],
+                    ['TempleSpa Radiance Facial', 'A Vitamin C-infused facial designed to brighten, resurface and lift dull, tired skin for a firmer, more radiant appearance.', 'mf'],
+                    ['Reflexology', 'A holistic therapy applying pressure to points on the feet that correspond to organs and systems of the body, promoting overall wellbeing.', 'mf', true],
+                    ['Back &amp; Backs of Legs Massage', 'A massage concentrating on the back and the backs of the legs, tailored to the pressure you like.', 'mf']
+                ],
+                note: ''
+            }
+        };
+
+        /* ===================== DATES ===================== */
+        // Dates are built from their parts so the day of the week never
+        // shifts with the timezone.
+        function parseISO(iso) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+            return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+        }
+
+        function toISO(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function addDays(d, n) {
+            const x = new Date(d.getTime());
+            x.setDate(x.getDate() + n);
+            return x;
+        }
+
+        // Each night is charged at the rate for the day it falls on.
+        function rateBand(d) {
+            const day = d.getDay();
+            return day === 5 ? 'fri' : day === 6 ? 'sat' : 'sunThu';
+        }
+
+        function shortDate(d) {
+            return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+
+        function money(n) {
+            return '£' + n.toFixed(2);
+        }
+
+        function plural(n, word) {
+            return `${n} ${word}${n === 1 ? '' : 's'}`;
+        }
+
+        function selectedPackage() {
+            const key = document.getElementById('spaPackage').value;
+            return SPA_PACKAGES.find(p => p.key === key) || SPA_PACKAGES[0];
+        }
+
+        /* ===================== PACKAGE CONTENT =====================
+           What each package includes, how dining works and the helpful
+           information, all varying by package. Sunday lunch details only
+           appear when the stay takes in a Sunday.
+        ---------------------------------------------------------------- */
+        function sessionText(pkg) {
+            return pkg.session === 'full'
+                ? 'Vale Spa full day session (9.15am &ndash; 6.00pm)'
+                : 'Vale Spa half day session &mdash; AM (9.15am &ndash; 2.00pm) or PM (2.00pm &ndash; 6.00pm)';
+        }
+
+        function lunchText(pkg) {
+            if (pkg.session === 'half') return 'Buffet lunch in the Vale Grill restaurant';
+            return '2 course buffet lunch in the Vale Grill restaurant'
+                + (pkg.prosecco ? ', including a glass of prosecco per person' : '');
+        }
+
+        function packageIncludes(pkg, nights) {
+            const list = [
+                `${plural(nights, 'night')} accommodation`,
+                'Full breakfast'
+            ];
+            if (pkg.dinner) list.push('3 course evening meal (Inclusive Menu)');
+            if (pkg.golf) {
+                list.push(`Spa guest: ${sessionText(pkg)}`);
+                list.push('Spa guest: one 50 minute treatment and use of the spa relaxation zones');
+                list.push(`Spa guest: ${lunchText(pkg)}`);
+                list.push('Golfing guest: 2 rounds of Championship golf (Lakes Course or Wales National Course)');
+            } else {
+                list.push(sessionText(pkg));
+                list.push('One 50 minute treatment');
+                list.push('Use of the spa relaxation zones');
+                list.push(lunchText(pkg));
+            }
+            list.push('Towel, robe and slippers for your spa day');
+            list.push('Use of the leisure facilities (gym, pool, sauna, steam room &amp; jacuzzi)');
+            list.push('Complimentary parking &amp; free WiFi');
+            return list;
+        }
+
+        function diningArrangements(pkg, spansSunday) {
+            const out = [];
+            out.push({ title: 'Breakfast', text: 'A full breakfast is included each morning of your stay.' });
+
+            let lunch;
+            if (pkg.golf) {
+                lunch = 'The spa guest enjoys a 2 course buffet lunch in the Vale Grill restaurant on their spa day.';
+            } else if (pkg.session === 'half') {
+                lunch = 'A buffet lunch in the Vale Grill restaurant is included on your spa day, timed around your morning or afternoon session.';
+            } else {
+                lunch = 'A 2 course buffet lunch in the Vale Grill restaurant is included on your spa day'
+                    + (pkg.prosecco ? ', with a glass of prosecco per person.' : '.');
+            }
+            out.push({ title: 'Lunch', text: lunch });
+
+            if (spansSunday) {
+                out.push({
+                    title: 'Sunday Lunch',
+                    text: 'On a Sunday, lunch is a traditional 2 course Sunday Lunch served at a confirmed sit-down time. '
+                        + 'Appropriate day attire is required in the Vale Grill on Sundays &mdash; robes and slippers are not permitted.'
+                });
+            }
+
+            if (pkg.dinner) {
+                out.push({ title: 'Dinner', text: 'Your 3 course evening meal from our Inclusive Menu is included.' });
+            } else {
+                out.push({
+                    title: 'Dinner',
+                    text: `Dinner is not included. You are welcome to add our 3 course evening meal from the Inclusive Menu for ${money(DINNER_ADD_ON_PP)} per person &mdash; please pre-book at least 48 hours before arrival &mdash; or reserve a table and dine from our A La Carte Menu, with payment made on the evening.`
+                });
+            }
+            return out;
+        }
+
+        function lunchTimes(pkg, spansSunday) {
+            const out = [];
+            if (pkg.session === 'half') {
+                out.push('AM session (9.15am &ndash; 2.00pm): lunch is served 1.00pm &ndash; 3.00pm.');
+                out.push('PM session (2.00pm &ndash; 6.00pm): lunch is served 12.30pm &ndash; 2.00pm.');
+            } else {
+                out.push('Lunch is served in the Vale Grill restaurant between 12.30pm and 3.00pm.');
+            }
+            if (spansSunday) out.push('Sunday Lunch is served at a sit-down time we will confirm with you.');
+            return out;
+        }
+
+        function helpfulInformation(pkg, spansSunday) {
+            return [
+                {
+                    title: 'Spa Opening Times',
+                    paras: [
+                        'The Vale Spa is open 9.00am &ndash; 6.00pm, Monday to Sunday, including Bank Holidays. Spa facilities close 30 minutes before closing time.',
+                        pkg.session === 'full'
+                            ? 'Your full day session runs from 9.15am to 6.00pm.'
+                            : 'Your half day session runs either 9.15am &ndash; 2.00pm (AM) or 2.00pm &ndash; 6.00pm (PM).',
+                        'Please arrive 15 minutes before your treatment time; late arrivals cannot be given an extension to their treatment.'
+                    ]
+                },
+                {
+                    title: 'What to Bring',
+                    paras: [
+                        'A towel, robe and slippers are provided for your spa day. Please bring swimwear for the pool and the wet and heat facilities.',
+                        'One complimentary robe is provided per guest per day; any further robes are charged at &pound;10 each.'
+                    ]
+                },
+                { title: 'Lunch Times', paras: lunchTimes(pkg, spansSunday) }
+            ];
+        }
+
+        function paymentFor(pkg, total, guests) {
+            if (pkg.payment === 'deposit') {
+                return {
+                    label: `Deposit (${money(TOGETHER_DEPOSIT_PP)} per person, at time of booking)`,
+                    amount: guests * TOGETHER_DEPOSIT_PP,
+                    policy: `${money(TOGETHER_DEPOSIT_PP)} per person non-refundable deposit required at time of booking. Remaining balance due 8 weeks prior to arrival. No cancellation / non-transferable.`
+                };
+            }
+            return {
+                label: 'Payment required at time of booking',
+                amount: total,
+                policy: 'Full non-refundable payment required at time of booking. No cancellation / non-transferable.'
+            };
+        }
+
+        /* ===================== RECALCULATE ===================== */
+        function recalculate() {
+            const pkg = selectedPackage();
+            const arrivalISO = document.getElementById('spaArrivalDate').value;
+            const arrival = parseISO(arrivalISO);
+            const nights = Math.max(1, parseInt(document.getElementById('spaNights').value) || 1);
+            const rooms = Math.max(1, parseInt(document.getElementById('spaRooms').value) || 1);
+            const guests = Math.max(1, parseInt(document.getElementById('spaGuests').value) || 1);
+            const preparedBy = document.getElementById('spaPreparedBy').value;
+
+            /* ---------- occupancy: each room holds one or two guests ---------- */
+            const warnings = [];
+            let doubles, singles;
+            if (pkg.pricing === 'couple') {
+                doubles = rooms;
+                singles = 0;
+                if (guests !== rooms * 2) {
+                    warnings.push(`The Golf &amp; Spa break is priced per couple &mdash; one spa guest and one golfer in each room &mdash; so ${plural(rooms, 'room')} should have ${rooms * 2} guests.`);
+                }
+            } else {
+                if (guests < rooms) warnings.push(`${plural(rooms, 'room')} need at least ${rooms} guests &mdash; every room needs at least one guest.`);
+                if (guests > rooms * 2) warnings.push(`${guests} guests will not fit in ${plural(rooms, 'room')} &mdash; each room is for one or two guests.`);
+                const fitted = Math.min(Math.max(guests, rooms), rooms * 2);
+                doubles = fitted - rooms;
+                singles = rooms * 2 - fitted;
+            }
+            if (pkg.minGuests && guests < pkg.minGuests) {
+                warnings.push(`The ${escHtml(pkg.name)} requires a minimum of ${pkg.minGuests} guests.`);
+            }
+
+            const occupancyText = pkg.pricing === 'couple'
+                ? `${plural(rooms, 'room')}, one spa guest and one golfer in each`
+                : [doubles ? `${plural(doubles, 'room')} with 2 guests sharing` : '',
+                   singles ? `${plural(singles, 'room')} single occupancy` : ''].filter(Boolean).join(', ');
+
+            /* ---------- price each night at that night's rate ---------- */
+            const summary = [];
+            let total = 0;
+            let spansSunday = false;
+            let departure = null;
+            const short = escHtml(pkg.short);
+
+            if (arrival) {
+                departure = addDays(arrival, nights);
+                for (let i = 0; i <= nights; i++) {
+                    if (addDays(arrival, i).getDay() === 0) spansSunday = true;
+                }
+                for (let i = 0; i < nights; i++) {
+                    const night = addDays(arrival, i);
+                    const rate = pkg.rates[rateBand(night)];
+                    const when = shortDate(night);
+                    if (pkg.pricing === 'couple') {
+                        const line = rooms * rate;
+                        summary.push({
+                            label: `${short} &mdash; ${when} (${rooms} x ${money(rate)} per couple)`,
+                            desc: `${short} &mdash; ${when} (per couple)`,
+                            price: line, qty: rooms, unitPrice: rate
+                        });
+                        total += line;
+                    } else {
+                        if (doubles > 0) {
+                            const roomRate = rate * 2;
+                            const line = doubles * roomRate;
+                            summary.push({
+                                label: `${short} &mdash; ${when} (${doubles} x ${money(roomRate)}, 2 sharing)`,
+                                desc: `${short} &mdash; ${when} (room, 2 sharing)`,
+                                price: line, qty: doubles, unitPrice: roomRate
+                            });
+                            total += line;
+                        }
+                        if (singles > 0) {
+                            const singleRate = rate + SINGLE_SUPPLEMENT;
+                            const line = singles * singleRate;
+                            summary.push({
+                                label: `${short} &mdash; ${when} single occupancy (${singles} x ${money(singleRate)})`,
+                                desc: `${short} &mdash; ${when} (single occupancy, incl. ${money(SINGLE_SUPPLEMENT)} supplement)`,
+                                price: line, qty: singles, unitPrice: singleRate
+                            });
+                            total += line;
+                        }
+                    }
+                }
+            }
+
+            /* ---------- custom items & discounts ---------- */
+            const customItems = readCustomItems();
+            customItems.forEach(ci => {
+                const desc = escHtml(ci.desc);
+                summary.push({
+                    label: ci.qty > 1 ? `${desc} (${ci.qty} x ${money(ci.price)})` : desc,
+                    desc: desc, price: ci.total, qty: ci.qty, unitPrice: ci.price
+                });
+                total += ci.total;
+            });
+            const customDiscounts = readCustomDiscounts();
+            customDiscounts.forEach(cd => {
+                const desc = escHtml(cd.desc);
+                summary.push({ label: desc, desc: desc, price: -cd.amount, type: 'discount' });
+                total -= cd.amount;
+            });
+
+            const payment = paymentFor(pkg, total, guests);
+
+            const q = {
+                pkg, arrivalISO, arrival, departure, departureISO: departure ? toISO(departure) : '',
+                nights, rooms, guests, doubles, singles, occupancyText, spansSunday,
+                preparedBy, customer: readCustomer(), customItems, customDiscounts,
+                summary, total, payment, warnings
+            };
+
+            renderSummary(q);
+            renderFormHints(q);
+            window._currentQuote = q;
+        }
+
+        function renderFormHints(q) {
+            const r = q.pkg.rates;
+            document.getElementById('spaRateHint').innerHTML = q.pkg.pricing === 'couple'
+                ? `Per couple: Sun&ndash;Thu ${money(r.sunThu)} &middot; Fri ${money(r.fri)} &middot; Sat ${money(r.sat)}`
+                : `Per person, 2 sharing: Sun&ndash;Thu ${money(r.sunThu)} &middot; Fri ${money(r.fri)} &middot; Sat ${money(r.sat)} `
+                    + `(room rate ${money(r.sunThu * 2)} / ${money(r.fri * 2)} / ${money(r.sat * 2)}). Single occupancy +${money(SINGLE_SUPPLEMENT)}.`
+                    + (q.pkg.minGuests ? ` Minimum ${q.pkg.minGuests} guests.` : '');
+            document.getElementById('spaOccupancyHint').innerHTML = q.occupancyText;
+
+            const box = document.getElementById('spaWarnings');
+            if (q.warnings.length) {
+                box.innerHTML = q.warnings.map(w => `<p>&#9888; ${w}</p>`).join('');
+                box.style.display = 'block';
+            } else {
+                box.innerHTML = '';
+                box.style.display = 'none';
+            }
+        }
+
+        /* ===================== RENDER SUMMARY ===================== */
+        function renderSummary(q) {
+            const div = document.getElementById('quoteSummary');
+
+            if (!q.arrival) {
+                div.innerHTML = '<div class="quote-item" style="color: #999;">Select an arrival date to price the break</div>';
+                return;
+            }
+
+            // Honour any line order the user has set (also reorders the array
+            // behind window._currentQuote, so the PDF matches the screen).
+            QuoteLineOrder.apply(q.summary);
+
+            let html = QuoteLineOrder.bar();
+            q.summary.forEach((item, i) => {
+                const attrs = QuoteLineOrder.rowAttrs(i);
+                const ctrl = QuoteLineOrder.controls(i);
+                if (item.type === 'discount') {
+                    html += `<div class="quote-item discount" ${attrs}><span>${item.label}</span><span>-${money(Math.abs(item.price))}</span>${ctrl}</div>`;
+                } else {
+                    html += `<div class="quote-item" ${attrs}><span>${item.label}</span><span>${money(item.price)}</span>${ctrl}</div>`;
+                }
+            });
+
+            html += `<div class="quote-item total"><span>TOTAL (inc. VAT)</span><span>${money(q.total)}</span></div>`;
+            html += `<div class="quote-item deposit-line"><span>${q.payment.label}</span><span>${money(q.payment.amount)}</span></div>`;
+
+            html += `<div class="quote-item info-line"><span>Package</span><span>${escHtml(q.pkg.name)}</span></div>`;
+            html += `<div class="quote-item info-line"><span>Stay</span><span>${shortDate(q.arrival)} &ndash; ${shortDate(q.departure)} (${plural(q.nights, 'night')})</span></div>`;
+            html += `<div class="quote-item info-line"><span>Rooms &amp; guests</span><span>${plural(q.rooms, 'room')}, ${plural(q.guests, 'guest')}</span></div>`;
+            q.warnings.forEach(w => {
+                html += `<div class="quote-item warn-line"><span>&#9888; ${w}</span></div>`;
+            });
+
+            html += '<div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--accent-light);">';
+            html += '<div style="font-size:0.8em; font-weight:700; color:var(--primary-burgundy); letter-spacing:0.5px; text-transform:uppercase; margin-bottom:8px;">Package Includes</div>';
+            packageIncludes(q.pkg, q.nights).forEach(inc => {
+                html += `<div class="quote-item package-include"><span>✓ ${inc}</span></div>`;
+            });
+            html += '</div>';
+
+            div.innerHTML = html;
+        }
+
+        /* ===================== GENERATE QUOTE ===================== */
+        function generateQuote() {
+            const q = window._currentQuote;
+            if (!q || !q.arrival) { alert('Please select an arrival date.'); return; }
+            if (q.warnings.length) {
+                const text = q.warnings.map(w => {
+                    const el = document.createElement('div');
+                    el.innerHTML = w;
+                    return '• ' + el.textContent;
+                }).join('\n');
+                alert('Please check the booking before generating the quote:\n\n' + text);
+                return;
+            }
+            displayQuoteModal();
+            document.getElementById('generateBtn').textContent = 'Regenerate Quote';
+            document.getElementById('quoteStatus').style.display = 'block';
+        }
+
+        function displayQuoteModal() {
+            const q = window._currentQuote;
+            if (!q) return;
+            document.getElementById('modalTitle').textContent = 'Your Spa Break Quote';
+
+            let html = '';
+            html += modalCustomer(q.customer);
+            html += modalItem('Package', escHtml(q.pkg.name));
+            html += modalItem('Arrival Date', formatDate(q.arrivalISO));
+            html += modalItem('Departure Date', formatDate(q.departureISO));
+            html += modalItem('Nights', q.nights);
+            html += modalItem('Rooms', `${q.rooms} &mdash; ${q.occupancyText}`);
+            html += modalItem('Guests', q.guests);
+            html += modalItem('Prepared By', escHtml(q.preparedBy || '—'));
+
+            html += `<div class="modal-item" style="background:#eef2ea; border-left:4px solid var(--primary-green);">
+                <div class="modal-item-label">Cost Breakdown</div>`;
+            q.summary.forEach(item => {
+                if (item.type === 'discount') {
+                    html += `<div class="modal-item-value" style="margin:5px 0; color:var(--primary-green-dark); font-weight:600;">• ${item.label}: -${money(Math.abs(item.price))}</div>`;
+                } else {
+                    html += `<div class="modal-item-value" style="margin:5px 0;">• ${item.label}: ${money(item.price)}</div>`;
+                }
+            });
+            html += '</div>';
+
+            const exVat = q.total / 1.2;
+            const vatAmount = q.total - exVat;
+            html += `<div class="modal-item" style="background:#f8f9fa; border-left:3px solid var(--primary-green); font-size:0.9em;">
+                <div class="modal-item-value" style="display:flex; justify-content:space-between; margin:3px 0;"><span>Subtotal (ex. VAT)</span><span>${money(exVat)}</span></div>
+                <div class="modal-item-value" style="display:flex; justify-content:space-between; margin:3px 0;"><span>VAT (20%)</span><span>${money(vatAmount)}</span></div>
+            </div>`;
+
+            html += `<div class="modal-total">TOTAL (inc. VAT): ${money(q.total)}</div>`;
+            html += `<div style="text-align:right; font-size:0.9em; color:var(--primary-green-dark); font-weight:600; margin-top:8px;">${q.payment.label}: ${money(q.payment.amount)}</div>`;
+
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('quoteModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        /* ===================== RESET ===================== */
+        function resetForm() {
+            QuoteLineOrder.clear();
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerEmail').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('spaArrivalDate').value = '';
+            document.getElementById('spaNights').value = '1';
+            document.getElementById('spaPackage').value = SPA_PACKAGES[0].key;
+            document.getElementById('spaRooms').value = '1';
+            document.getElementById('spaGuests').value = '2';
+            document.getElementById('spaPreparedBy').value = '';
+            document.getElementById('customItemsContainer').innerHTML = '';
+            document.getElementById('customDiscountsContainer').innerHTML = '';
+            document.getElementById('generateBtn').textContent = 'Generate Quote';
+            document.getElementById('quoteStatus').style.display = 'none';
+            closeModal();
+            recalculate();
+        }
+
+        /* ===================== PDF GENERATION ===================== */
+        function downloadPDFQuote() {
+            const q = window._currentQuote;
+            if (!q || !q.arrival || q.total === 0) { alert('Please generate a quote first.'); return; }
+            downloadSpaPDF(q);
+        }
+
+        function pdfFooter(contactEmail) {
+            const email = contactEmail || 'reservations@valeresort.com';
+            return `<div class="footer">
+                The Vale Resort, Hensol Park, Hensol, Vale of Glamorgan, CF72 8JY<br>
+                ${email} &nbsp;|&nbsp; ${SPA_CONTACT_PHONE} &nbsp;|&nbsp; ${SPA_WEBSITE}
+            </div>`;
+        }
+
+        function pdfDiscountRow(desc, total) {
+            return `<tr style="color:#6d8062; font-weight:600;">
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7;">${desc}</td>
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7; text-align:center;">&mdash;</td>
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7; text-align:right;">&mdash;</td>
+                <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7; text-align:right;">-${money(Math.abs(total))}</td>
+            </tr>`;
+        }
+
+        function downloadSpaPDF(q) {
+            const preparedBy = escHtml(q.preparedBy || '—');
+            const contactEmail = PreparedByStore.emailFor(q.preparedBy, 'reservations@valeresort.com');
+            const quoteDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            const exVat = q.total / 1.2;
+            const vatAmount = q.total - exVat;
+            const tl = TREATMENTS[q.pkg.treatments];
+
+            const lineRows = q.summary.map(item => item.type === 'discount'
+                ? pdfDiscountRow(item.desc, item.price)
+                : pdfRow(item.desc, item.qty, item.unitPrice, item.price)).join('');
+
+            const bullet = '<span style="display:inline-block; width:10px; height:10px; background:#8fa17e; border-radius:50%; margin-right:14px; vertical-align:middle;"></span>';
+
+            const includesRows = packageIncludes(q.pkg, q.nights).map((text, idx) => `<tr style="${idx % 2 === 1 ? 'background:#f7f4eb;' : ''}">
+                            <td style="padding:8px 20px; border-bottom:1px solid #dcd6c7; font-size:12.5px; vertical-align:middle;">${bullet}${text}</td>
+                        </tr>`).join('');
+
+            const diningBlocks = diningArrangements(q.pkg, q.spansSunday).map(d => `
+                <div class="info-block">
+                    <h3>${d.title}</h3>
+                    <p>${d.text}</p>
+                </div>`).join('');
+
+            const helpfulBlocks = helpfulInformation(q.pkg, q.spansSunday).map(h => `
+                <div class="info-block">
+                    <h3>${h.title}</h3>
+                    ${h.paras.map((p, i) => `<p${i ? ' style="margin-top:6px;"' : ''}>${p}</p>`).join('')}
+                </div>`).join('');
+
+            const treatmentRows = tl.items.map(([name, desc, suit, limited], idx) => `<tr style="${idx % 2 === 1 ? 'background:#f7f4eb;' : ''}">
+                            <td style="padding:8px 12px; border-bottom:1px solid #dcd6c7; font-size:11.5px; line-height:1.5;">
+                                <strong style="color:#2a2e3a;">${name}</strong>${limited ? ' <span style="color:#8b3a4a; font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase;">(limited availability)</span>' : ''}
+                                <span style="float:right; color:#8b3a4a; font-size:9.5px; letter-spacing:1px;">${suit === 'f' ? 'F' : 'M|F'}</span><br>
+                                <span style="color:#5a5a5a;">${desc}</span>
+                            </td>
+                        </tr>`).join('');
+
+            const html = `<!DOCTYPE html><html><head><title>Vale Resort Spa Break Quotation</title><style>${pdfStyles()}</style></head><body>
+            ${pdfLogo()}
+            <div class="doc-title">Spa Break Quotation</div>
+
+            <div class="meta-grid">
+                <div class="meta-col">
+                    <div class="meta-row"><span class="meta-label">Quote Date</span><span class="meta-value">${quoteDate}</span></div>
+                    <div class="meta-row"><span class="meta-label">Arrival Date</span><span class="meta-value">${formatDate(q.arrivalISO)}</span></div>
+                    <div class="meta-row"><span class="meta-label">Number of Nights</span><span class="meta-value">${q.nights}</span></div>
+                    <div class="meta-row"><span class="meta-label">Number of Guests</span><span class="meta-value">${q.guests}</span></div>
+                    <div class="meta-row"><span class="meta-label">Number of Rooms</span><span class="meta-value">${q.rooms} &mdash; ${q.occupancyText}</span></div>
+                    <div class="meta-row"><span class="meta-label">Package</span><span class="meta-value">${escHtml(q.pkg.name)}</span></div>
+                </div>
+                <div class="meta-col">
+                    ${customerMetaRows(q.customer)}
+                    <div class="meta-row"><span class="meta-label">Prepared By</span><span class="meta-value">${preparedBy}</span></div>
+                    <div class="meta-row" style="margin-top:8px;"><span class="meta-label">Contact</span><span class="meta-value">${contactEmail}</span></div>
+                    <div class="meta-row"><span class="meta-label">Telephone</span><span class="meta-value">${SPA_CONTACT_PHONE}</span></div>
+                    <div class="meta-row"><span class="meta-label">Website</span><span class="meta-value">${SPA_WEBSITE}</span></div>
+                </div>
+            </div>
+
+            <table><thead><tr>
+                <th style="text-align:left; width:50%;">Description</th>
+                <th style="text-align:center; width:12%;">Qty</th>
+                <th style="text-align:right; width:19%;">Unit Price</th>
+                <th style="text-align:right; width:19%;">Total (inc VAT)</th>
+            </tr></thead><tbody>${lineRows}</tbody></table>
+
+            <table class="totals-table">
+                <tr class="sub-row"><td class="tot-label">Subtotal (ex. VAT)</td><td class="tot-value">${money(exVat)}</td></tr>
+                <tr class="sub-row"><td class="tot-label">VAT (20%)</td><td class="tot-value">${money(vatAmount)}</td></tr>
+                <tr class="grand-total"><td>Total (inc. VAT)</td><td style="text-align:right;">${money(q.total)}</td></tr>
+                <tr class="sub-row"><td class="tot-label" style="font-style:italic; color:#6d8062;">${q.payment.label}</td><td class="tot-value" style="font-weight:bold; color:#6d8062;">${money(q.payment.amount)}</td></tr>
+                <tr class="sub-row"><td colspan="2" class="tot-label" style="font-size:11px; font-style:italic;"><strong>Policy:</strong> ${q.payment.policy}</td></tr>
+            </table>
+
+            ${pdfFooter(contactEmail)}
+
+            <!-- Package Includes + Dining -->
+            <div class="pdf-section">
+                <div class="keep-with-next" style="text-align:center; font-size:20px; letter-spacing:3px; color:#8b3a4a; text-transform:uppercase; margin-bottom:14px; font-weight:normal;">Your Spa Package Includes</div>
+                <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+                    <tbody>${includesRows}</tbody>
+                </table>
+
+                <div class="section-title">Dining Arrangements</div>
+                ${diningBlocks}
+            </div>
+
+            <!-- Helpful Information -->
+            <div class="pdf-section">
+                <div class="section-title">Helpful Information</div>
+                ${helpfulBlocks}
+            </div>
+
+            <!-- Spa Treatment Choices -->
+            <div class="pdf-section">
+                <div class="section-title">Spa Treatment Choices</div>
+                <p class="keep-with-next" style="text-align:center; font-size:11px; color:#6d8062; font-style:italic; margin-bottom:10px;">${tl.title} &mdash; please choose one 50 minute treatment per spa guest</p>
+                <table style="width:100%; border-collapse:collapse;">
+                    <tbody>${treatmentRows}</tbody>
+                </table>
+                <p style="font-size:11px; color:#5a5a5a; margin-top:8px; line-height:1.6;">
+                    ${tl.note ? tl.note + ' ' : ''}Treatment choices are subject to availability, to make sure each treatment can be given by a qualified therapist.
+                    M|F &mdash; suitable for male &amp; female guests; F &mdash; suitable for female guests.
+                </p>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="pdf-section">
+                <div class="section-title">Terms &amp; Conditions</div>
+                <p class="keep-together" style="text-align:center; font-size:12px; line-height:1.7;">
+                    Your booking is subject to the Vale Resort spa terms and conditions:<br>
+                    <a href="${SPA_TERMS_URL}" style="color:#8b3a4a;">${SPA_TERMS_URL}</a>
+                </p>
+            </div>
+            </body></html>`;
+
+            openPDFWindow(html);
+        }
+
+        /* ===================== INIT ===================== */
+        (function buildPackageOptions() {
+            document.getElementById('spaPackage').innerHTML = SPA_PACKAGES
+                .map(p => `<option value="${p.key}">${escHtml(p.name)}</option>`).join('');
+        })();
+
+        document.getElementById('quoteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.getElementById('spaArrivalDate').min = toISO(new Date());
+
+        // Prevent mouse-wheel from changing focused number inputs
+        document.addEventListener('wheel', function(e) {
+            if (document.activeElement && document.activeElement.type === 'number' && document.activeElement === e.target) {
+                e.preventDefault();
+                document.activeElement.blur();
+            }
+        }, { passive: false });
+
+        recalculate();
+        PreparedByStore.init({
+            // Its own key: the tools share bethanleeke.github.io's storage.
+            key: 'reservations-spa',
+            selectIds: ['spaPreparedBy'],
+            fallbackEmail: 'reservations@valeresort.com'
+        });
+    </script>
+</body>
+</html>

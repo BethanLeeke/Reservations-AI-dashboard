@@ -9,6 +9,7 @@ A browser-based dashboard for the Vale Resort and Hensol Castle reservations tea
 | Tab | What it does |
 | --- | --- |
 | **Golf quoting tool** | Golf break quotations — customer details, green fees, buggies, catering, accommodation and discounts, producing a printable PDF quote. |
+| **Spa quoting tool** | Spa break quotations for the five spa packages, priced by room and by night of the week, with custom items and discounts. The PDF quote carries what the package includes and its dining arrangements, helpful information, the treatment choices for that package and a link to the spa terms. |
 | **Forecast** | Drop in the week's reports (Ten Day On Books for both sites, group bookings, activity and event schedules, res diary) to build a rooms, sleepers, group and diner forecast. |
 | **Morning Brief** | The same reports plus the inventory pickup, turned into the daily brief: rooms, sleepers, groups, diners and VIPs. |
 | **Golf Matrix pricing** | Guest-facing and reservations-facing breakdowns of a golf booking, priced from the golf matrix workbook. |
@@ -23,6 +24,21 @@ There is no build step, package manager or server. Every tool is a single HTML f
 **Nothing you load leaves your computer.** The forecast, morning brief, matrix pricing and arrivals tools all read the spreadsheets you drop onto them in the browser itself. No report, guest list or price file is uploaded anywhere.
 
 Anything a tool remembers between visits — the golf matrix, the Prepared By list — is kept in that browser's local storage. It is per browser and per machine, not shared between colleagues.
+
+## How the spa quoting tool prices a break
+
+Rates and inclusions come from the reservations team's spa package sheet. Every package is one night, priced per person based on two guests sharing, so the room rate is twice the per person rate. Golf & Spa is the exception: it is priced per couple.
+
+- **Each night is charged at the rate for the day it falls on** - Sunday to Thursday, Friday or Saturday - so a Friday-and-Saturday stay is a Friday night plus a Saturday night.
+- **Rooms with two guests** are charged the room rate. **A room with one guest** is charged the per person rate plus the £50 single supplement. With two guests in every room this is simply rooms × room rate.
+- **Golf & Spa** needs two guests per room - one spa guest and one golfer.
+- **Together Spa Break** needs at least 10 guests, and takes a £50 per person deposit at booking rather than full payment.
+
+The tool will not generate a quote that breaks these rules; it says what needs fixing instead.
+
+The PDF's Sunday Lunch details appear only when the stay takes in a Sunday, from arrival day to departure day. Treatment choices follow the package sheet: the Full Day list for the full day packages, Golf & Spa and Together, and the Half Day list for the two half day packages.
+
+The rates live at the top of the spa tool's script (`SPA_PACKAGES`), so a new rate card means updating those numbers. The tool's source is `Reservations/Spa Quoting Tool.html` in the sales team's shared folder.
 
 ## Running it locally
 
@@ -43,7 +59,8 @@ Allow pop-ups when generating a PDF: the quoting tool opens a print-friendly win
 ```text
 .
 |-- index.html                  # dashboard landing page
-|-- golf-quoting-tool/          # golf day and golf break quotations
+|-- golf-quoting-tool/          # golf break quotations
+|-- spa-quoting-tool/           # spa break quotations
 |-- forecast/                   # hotel forecast builder
 |-- morning-brief/              # morning brief builder
 |-- golf-matrix-pricing/        # golf matrix pricing tool
