@@ -650,6 +650,57 @@
         }
 
         .occupancy-hint { margin: -16px 0 22px; }
+
+        /* Treatment times: tick-boxes styled as toggles */
+        .time-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .time-chip { position: relative; }
+        .time-chip input { position: absolute; opacity: 0; pointer-events: none; }
+        .time-chip span {
+            display: inline-block;
+            padding: 9px 15px;
+            border: 2px solid var(--accent-light);
+            border-radius: 4px;
+            background: var(--bg-light);
+            font-size: 0.9em;
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s ease;
+        }
+        .time-chip span:hover { border-color: var(--primary-green); }
+        .time-chip input:checked + span { background: var(--primary-green); border-color: var(--primary-green); color: #ffffff; }
+        .time-chip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(143, 161, 126, 0.35); }
+
+        /* One row per guest, one select per room */
+        .guest-row { display: grid; grid-template-columns: 1.2fr 1.6fr 0.7fr; gap: 10px; align-items: end; margin-bottom: 10px; }
+        .guest-row .form-group, .room-prefs .form-group { margin-bottom: 0; }
+        .guest-row label, .room-prefs label { font-size: 0.82em; margin-bottom: 6px; }
+        .guest-row .golf-note { padding: 14px 0; font-size: 0.85em; font-style: italic; color: var(--text-light); }
+        .room-prefs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px; }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--accent-light);
+            border-radius: 4px;
+            font-size: 1em;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(143, 161, 126, 0.2);
+            background: #fffbf7;
+        }
+
+        @media (max-width: 600px) {
+            .guest-row { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -749,6 +800,23 @@
                 </div>
                 <div class="helper-text occupancy-hint" id="spaOccupancyHint"></div>
                 <div class="warn-box" id="spaWarnings" style="display:none;"></div>
+
+                <!-- =============== TREATMENT TIMES, GUESTS & ROOMS =============== -->
+                <div class="section-subtitle">Treatment Times Available</div>
+                <div class="time-chips" id="spaTimeChips"></div>
+                <div class="helper-text" style="margin-bottom:24px;">Tick the times that are available. They show on the quote, and each guest&rsquo;s time is picked from them.</div>
+
+                <div class="section-subtitle">Guests &amp; Treatments</div>
+                <div id="spaGuestRows"></div>
+                <div class="helper-text" style="margin:2px 0 24px;">One row per guest, following the number of guests above. Anything left blank shows as &ldquo;to be confirmed&rdquo;.</div>
+
+                <div class="section-subtitle">Room Preferences</div>
+                <div class="room-prefs" id="spaRoomPrefs"></div>
+
+                <div class="form-group">
+                    <label for="spaDietary">Dietary Requirements</label>
+                    <textarea id="spaDietary" rows="3" placeholder="e.g. Guest 2 is vegetarian; Guest 3 has a nut allergy" oninput="recalculate();"></textarea>
+                </div>
 
                 <div class="form-group">
                     <label for="spaPreparedBy">Prepared By</label>
@@ -1757,6 +1825,153 @@
             };
         }
 
+        /* ===================== TREATMENT TIMES, GUESTS & ROOMS =====================
+           The guest and room rows follow the number of guests and rooms. They
+           are rebuilt only when that shape changes - never on a keystroke, so
+           typing a name keeps its focus - and values carry across a rebuild.
+        ------------------------------------------------------------------------ */
+        const TREATMENT_TIMES = ['09:30', '10:30', '11:30', '12:30', '14:00', '15:00', '16:00', '17:00'];
+        const ROOM_PREFERENCES = ['Double', 'Twin'];
+        const MAX_ROWS = 60;
+        let guestRowsShape = '';
+        let roomPrefsShape = '';
+
+        function buildTimeChips() {
+            document.getElementById('spaTimeChips').innerHTML = TREATMENT_TIMES.map(t =>
+                `<label class="time-chip"><input type="checkbox" value="${t}" onchange="recalculate();"><span>${t}</span></label>`).join('');
+        }
+
+        function readAvailableTimes() {
+            return Array.from(document.querySelectorAll('#spaTimeChips input:checked')).map(i => i.value);
+        }
+
+        // Treatment names are held as HTML ("Back &amp; Facial"); this gives the text.
+        function plainText(html) {
+            const el = document.createElement('div');
+            el.innerHTML = html;
+            return el.textContent;
+        }
+
+        // Golf & Spa rooms hold a spa guest and a golfer; the golfer has no treatment.
+        function guestRole(pkg, i) {
+            return pkg.golf && i % 2 === 1 ? 'golf' : 'spa';
+        }
+
+        function guestLabel(pkg, i) {
+            if (pkg.golf) return `Room ${Math.floor(i / 2) + 1} &mdash; ${i % 2 === 0 ? 'spa guest' : 'golfer'}`;
+            return `Guest ${i + 1}`;
+        }
+
+        function readGuestRows() {
+            return Array.from(document.querySelectorAll('#spaGuestRows .guest-row')).map(row => {
+                const tr = row.querySelector('.guest-treatment');
+                const tm = row.querySelector('.guest-time');
+                return {
+                    name: row.querySelector('.guest-name').value.trim(),
+                    treatment: tr ? tr.value : '',
+                    time: tm ? tm.value : ''
+                };
+            });
+        }
+
+        function syncGuestRows(pkg, guests, times) {
+            const count = Math.min(guests, MAX_ROWS);
+            const shape = [pkg.treatments, pkg.golf ? 'golf' : 'spa', count, times.join(',')].join('|');
+            if (shape === guestRowsShape) return;
+            const previous = readGuestRows();
+            guestRowsShape = shape;
+
+            const treatments = TREATMENTS[pkg.treatments].items.map(([name]) => name);
+            // Until any time is ticked, every time is on offer.
+            const timeChoices = times.length ? times : TREATMENT_TIMES;
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                const role = guestRole(pkg, i);
+                html += `<div class="guest-row" data-role="${role}">
+                    <div class="form-group">
+                        <label>${guestLabel(pkg, i)}</label>
+                        <input type="text" class="guest-name" placeholder="Guest name" oninput="recalculate();">
+                    </div>`;
+                if (role === 'golf') {
+                    html += `<div class="form-group" style="grid-column: span 2;">
+                        <label>Treatment</label>
+                        <div class="golf-note">2 rounds of Championship golf &mdash; no spa treatment</div>
+                    </div>`;
+                } else {
+                    html += `<div class="form-group">
+                        <label>Treatment</label>
+                        <select class="guest-treatment" onchange="recalculate();">
+                            <option value="">To be confirmed</option>
+                            ${treatments.map(n => `<option value="${n}">${n}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Time</label>
+                        <select class="guest-time" onchange="recalculate();">
+                            <option value="">TBC</option>
+                            ${timeChoices.map(t => `<option value="${t}">${t}</option>`).join('')}
+                        </select>
+                    </div>`;
+                }
+                html += '</div>';
+            }
+            const box = document.getElementById('spaGuestRows');
+            box.innerHTML = html;
+
+            // A treatment or time no longer on offer falls back to "to be confirmed".
+            box.querySelectorAll('.guest-row').forEach((row, i) => {
+                const p = previous[i];
+                if (!p) return;
+                row.querySelector('.guest-name').value = p.name;
+                const tr = row.querySelector('.guest-treatment');
+                if (tr && Array.from(tr.options).some(o => o.value === p.treatment)) tr.value = p.treatment;
+                const tm = row.querySelector('.guest-time');
+                if (tm && Array.from(tm.options).some(o => o.value === p.time)) tm.value = p.time;
+            });
+        }
+
+        function readRoomPrefs() {
+            return Array.from(document.querySelectorAll('#spaRoomPrefs select')).map(s => s.value);
+        }
+
+        function syncRoomPrefs(rooms) {
+            const count = Math.min(rooms, MAX_ROWS);
+            if (String(count) === roomPrefsShape) return;
+            const previous = readRoomPrefs();
+            roomPrefsShape = String(count);
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                html += `<div class="form-group">
+                    <label>Room ${i + 1}</label>
+                    <select onchange="recalculate();">
+                        <option value="">No preference</option>
+                        ${ROOM_PREFERENCES.map(p => `<option value="${p}">${p}</option>`).join('')}
+                    </select>
+                </div>`;
+            }
+            const box = document.getElementById('spaRoomPrefs');
+            box.innerHTML = html;
+            box.querySelectorAll('select').forEach((s, i) => { if (previous[i]) s.value = previous[i]; });
+        }
+
+        function hasGuestDetails(q) {
+            return q.guestDetails.some(g => g.name || g.treatment || g.time);
+        }
+
+        function roomPrefLines(q) {
+            return q.roomPrefs.map((p, i) => p ? `Room ${i + 1}: ${p}` : '').filter(Boolean);
+        }
+
+        function multiline(text) {
+            return escHtml(text).replace(/\n/g, '<br>');
+        }
+
+        // What a guest is having, for the preview and the PDF.
+        function guestTreatmentText(g, tbc) {
+            if (g.role === 'golf') return '2 rounds of Championship golf';
+            return g.treatment ? escHtml(g.treatment) : tbc;
+        }
+
         /* ===================== RECALCULATE ===================== */
         function recalculate() {
             const pkg = selectedPackage();
@@ -1860,10 +2075,22 @@
 
             const payment = paymentFor(pkg, total, guests);
 
+            /* ---------- treatment times, guests, rooms & dietary ---------- */
+            const availableTimes = readAvailableTimes();
+            syncGuestRows(pkg, guests, availableTimes);
+            syncRoomPrefs(rooms);
+            const guestDetails = readGuestRows().map((g, i) => Object.assign(g, {
+                label: plainText(guestLabel(pkg, i)),
+                role: guestRole(pkg, i)
+            }));
+            const roomPrefs = readRoomPrefs();
+            const dietary = document.getElementById('spaDietary').value.trim();
+
             const q = {
                 pkg, arrivalISO, arrival, departure, departureISO: departure ? toISO(departure) : '',
                 nights, rooms, guests, doubles, singles, occupancyText, spansSunday,
                 preparedBy, customer: readCustomer(), customItems, customDiscounts,
+                availableTimes, guestDetails, roomPrefs, dietary,
                 summary, total, payment, warnings
             };
 
@@ -1967,6 +2194,15 @@
             html += modalItem('Rooms', `${q.rooms} &mdash; ${q.occupancyText}`);
             html += modalItem('Guests', q.guests);
             html += modalItem('Prepared By', escHtml(q.preparedBy || '—'));
+            if (q.availableTimes.length) html += modalItem('Treatment Times Available', q.availableTimes.join(' &middot; '));
+            if (hasGuestDetails(q)) {
+                html += modalItem('Guests &amp; Treatments', q.guestDetails.map(g =>
+                    `<strong>${escHtml(g.name || g.label)}</strong> &mdash; ${guestTreatmentText(g, 'treatment to be confirmed')}`
+                    + (g.role !== 'golf' && g.time ? ` at ${g.time}` : '')).join('<br>'));
+            }
+            const prefs = roomPrefLines(q);
+            if (prefs.length) html += modalItem('Room Preferences', prefs.join('<br>'));
+            if (q.dietary) html += modalItem('Dietary Requirements', multiline(q.dietary));
 
             html += `<div class="modal-item" style="background:#eef2ea; border-left:4px solid var(--primary-green);">
                 <div class="modal-item-label">Cost Breakdown</div>`;
@@ -2006,6 +2242,12 @@
             document.getElementById('spaRooms').value = '1';
             document.getElementById('spaGuests').value = '2';
             document.getElementById('spaPreparedBy').value = '';
+            document.querySelectorAll('#spaTimeChips input').forEach(i => { i.checked = false; });
+            document.getElementById('spaGuestRows').innerHTML = '';
+            document.getElementById('spaRoomPrefs').innerHTML = '';
+            guestRowsShape = '';
+            roomPrefsShape = '';
+            document.getElementById('spaDietary').value = '';
             document.getElementById('customItemsContainer').innerHTML = '';
             document.getElementById('customDiscountsContainer').innerHTML = '';
             document.getElementById('generateBtn').textContent = 'Generate Quote';
@@ -2068,6 +2310,35 @@
                     ${h.paras.map((p, i) => `<p${i ? ' style="margin-top:6px;"' : ''}>${p}</p>`).join('')}
                 </div>`).join('');
 
+            // Guests, their treatments and times, room preferences and dietary
+            // requirements - shown only for whatever has been filled in.
+            const tbc = '<em style="color:#8a8a8a;">To be confirmed</em>';
+            const prefs = roomPrefLines(q);
+            const guestRows = q.guestDetails.map(g => `<tr>
+                            <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7;">${escHtml(g.name || g.label)}</td>
+                            <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7;">${guestTreatmentText(g, tbc)}</td>
+                            <td style="padding:7px 10px; border-bottom:1px solid #dcd6c7; text-align:right;">${g.role === 'golf' ? '&mdash;' : (g.time || '<em style="color:#8a8a8a;">TBC</em>')}</td>
+                        </tr>`).join('');
+            const guestSection = hasGuestDetails(q) || prefs.length || q.dietary ? `
+            <!-- Guests & Treatments -->
+            <div class="pdf-section">
+                <div class="section-title">Your Guests &amp; Treatments</div>
+                ${hasGuestDetails(q) ? `<table style="margin-bottom:14px;"><thead><tr>
+                    <th style="text-align:left; width:32%;">Guest</th>
+                    <th style="text-align:left; width:50%;">Treatment</th>
+                    <th style="text-align:right; width:18%;">Time</th>
+                </tr></thead><tbody>${guestRows}</tbody></table>` : ''}
+                ${prefs.length ? `<div class="info-block"><h3>Room Preferences</h3><p>${prefs.join(' &nbsp;&middot;&nbsp; ')}</p></div>` : ''}
+                ${q.dietary ? `<div class="info-block"><h3>Dietary Requirements</h3><p>${multiline(q.dietary)}</p></div>` : ''}
+            </div>` : '';
+
+            const timesLine = q.availableTimes.length
+                ? `<div style="text-align:center; font-size:12px; line-height:1.7; margin-bottom:12px;">
+                    <div style="color:#8b3a4a; font-size:10px; letter-spacing:1.5px; text-transform:uppercase;">Treatment times available</div>
+                    <div>${q.availableTimes.join(' &nbsp;&middot;&nbsp; ')}</div>
+                </div>`
+                : '';
+
             const treatmentRows = tl.items.map(([name, desc, suit, limited], idx) => `<tr style="${idx % 2 === 1 ? 'background:#f7f4eb;' : ''}">
                             <td style="padding:8px 12px; border-bottom:1px solid #dcd6c7; font-size:11.5px; line-height:1.5;">
                                 <strong style="color:#2a2e3a;">${name}</strong>${limited ? ' <span style="color:#8b3a4a; font-size:9.5px; letter-spacing:0.5px; text-transform:uppercase;">(limited availability)</span>' : ''}
@@ -2114,6 +2385,7 @@
             </table>
 
             ${pdfFooter(contactEmail)}
+            ${guestSection}
 
             <!-- Package Includes + Dining -->
             <div class="pdf-section">
@@ -2135,7 +2407,11 @@
             <!-- Spa Treatment Choices -->
             <div class="pdf-section">
                 <div class="section-title">Spa Treatment Choices</div>
-                <p class="keep-with-next" style="text-align:center; font-size:11px; color:#6d8062; font-style:italic; margin-bottom:10px;">${tl.title} &mdash; please choose one 50 minute treatment per spa guest</p>
+                <!-- The times and the list's title move as one, and stay with the list. -->
+                <div class="keep-together keep-with-next">
+                    ${timesLine}
+                    <p style="text-align:center; font-size:11px; color:#6d8062; font-style:italic; margin-bottom:10px;">${tl.title} &mdash; please choose one 50 minute treatment per spa guest</p>
+                </div>
                 <table style="width:100%; border-collapse:collapse;">
                     <tbody>${treatmentRows}</tbody>
                 </table>
@@ -2159,6 +2435,8 @@
         }
 
         /* ===================== INIT ===================== */
+        buildTimeChips();
+
         (function buildPackageOptions() {
             document.getElementById('spaPackage').innerHTML = SPA_PACKAGES
                 .map(p => `<option value="${p.key}">${escHtml(p.name)}</option>`).join('');

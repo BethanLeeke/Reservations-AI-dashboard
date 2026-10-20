@@ -38,6 +38,8 @@ The tool will not generate a quote that breaks these rules; it says what needs f
 
 The PDF's Sunday Lunch details appear only when the stay takes in a Sunday, from arrival day to departure day. Treatment choices follow the package sheet: the Full Day list for the full day packages, Golf & Spa and Together, and the Half Day list for the two half day packages.
 
+The quote can also carry the booking's details. Tick the **treatment times available** (09:30 to 17:00) and they are listed on the PDF; each guest's time is then picked from the ticked times. **Guests & treatments** gives one row per guest - name, treatment from that package's list, and time - and Golf & Spa rooms list a spa guest and a golfer, the golfer having no treatment. There is also a **double or twin preference** per room and a free-text **dietary requirements** box. All of these appear in the quote preview and in a Your Guests & Treatments section of the PDF, and only what has been filled in is shown; anything left blank reads as to be confirmed.
+
 The rates live at the top of the spa tool's script (`SPA_PACKAGES`), so a new rate card means updating those numbers. The tool's source is `Reservations/Spa Quoting Tool.html` in the sales team's shared folder.
 
 ## Running it locally
